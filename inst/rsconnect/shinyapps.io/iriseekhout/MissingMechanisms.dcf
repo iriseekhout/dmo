@@ -1,0 +1,11 @@
+name: MissingMechanisms
+title:
+account: iriseekhout
+server: shinyapps.io
+appId: 124384
+bundleId: 639429
+url: https://iriseekhout.shinyapps.io/MissingMechanisms/
+when: 1481128148.53267
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: manifest.json

@@ -1,0 +1,10 @@
+Package: dmo
+Title: What the Package Does (one line, title case)
+Version: 0.0.0.9000
+Authors@R: person("Iris", "Eekhout", email = "iris.eekhout@tno.nl", role = c("aut", "cre"))
+Description: This package contains functions and scripts to help work with missing data. Most parts were made for the Don't Miss Out! project that focussed on the valuable information missing data can hold. In this project methods to deal with missing data, in mainly questionnaire data, were investigated. 
+Depends: R (>= 3.5.1), MASS
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1

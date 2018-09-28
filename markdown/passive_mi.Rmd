@@ -1,0 +1,149 @@
+---
+title: "passive multiple imputation in `mice`"
+author: "Iris Eekhout"
+date: "28 september 2018"
+output: html_document
+---
+
+```{r setup, include=TRUE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(mice)
+library(mitools)
+library(dmo)
+```
+
+This document demonstrates how to perform passive multiple imputation in a fictive simulated dataset with five questionnaries each containing 10 items. In this document the following packages are used: `mice`, `mitools` and `dmo`. 
+
+
+## Generate simulated data
+Data are generated for 100 subjects. Each subjects has observations for 5 questionnaires and 3 covariates.
+```{r }
+#generate questionnaire data
+k<- c(10,10,10,10,10)
+nq <- 5
+x <- gen_qdata(n=100, nq=nq, k= k)
+
+#generate covariate data
+cov <- MASS::mvrnorm(n=100, mu=c(5,5,5), Sigma=matrix(c(10,1,1,1,10,1,1,1,10),3,3))
+colnames(cov) <- c("cov1", "cov2", "cov3")
+
+x <- data.frame(x,cov)
+
+```
+
+### Generate missing values
+Missing values are generated with the MAR mechanism for 25% of the subjects with a random pattern. Missings are only generated in the item scores (not in the covariates).
+
+```{r}
+alpha <- 0.25
+pattern <- matrix(c(sample(c(0,1), size=2*sum(k),replace = TRUE)),nrow=2)
+pattern <- cbind(pattern, matrix(c(1,1,1,1,1,1),nrow=2))
+f <- c(0.5,0.5)
+g <- c(4,4)
+x <- MAR(x,alpha,pattern,f,g)
+colnames(x) <- c(paste0("I",1:sum(k)),c("cov1", "cov2", "cov3") )
+```
+
+
+###calculate total scores for questionnaires
+```{r}
+ts <- dmo::calculate_ts(x, nq=5,k= c(10,10,10,10,10))
+data <- data.frame(x,ts)
+```
+
+## Passive multiple imputation
+###set up imputation model
+First the methods are adapted for the questionnaire total scores.
+```{r}
+ini <- mice(data, max=0, print=FALSE)
+meth <- ini$meth
+
+#for each questionnaire adapt imputation method (meth): make function to calculate TS between iterations. Example TS1:
+#meth["TS1"] <- "~I(I1+I2+I3+I4+I5+I6+I7+I8+I9+I10)" - loop below automates for simulation data
+nq <- 5
+k <- c(10,10,10,10,10)
+for(q in seq_along(1:nq)){
+  meth[paste0("TS",q)] <- paste0("~I(", paste(paste0("I",1:k[q]), collapse="+"), ")")
+}
+meth
+```
+
+
+The the predictor matrix is adapted such that items are imputed by items own questionnaire and other TSs.
+In predictor matrix: target variable mi is in row and column variables are predictors
+```{r}
+pred <- ini$predictorMatrix
+pred[paste0("I", 1:10),] <- 0
+pred[paste0("I", 1:10),paste0("I", 1:10)] <- 1
+pred[paste0("I", 1:10),c("TS2","TS3","TS4","TS5")] <- 1
+pred[paste0("I", 11:20),] <- 0
+pred[paste0("I", 11:20),paste0("I", 11:20)] <- 1
+pred[paste0("I", 11:20),c("TS1","TS3","TS4","TS5")] <- 1
+pred[paste0("I", 21:30),] <- 0
+pred[paste0("I", 21:30),paste0("I", 21:30)] <- 1
+pred[paste0("I", 21:30),c("TS1","TS2","TS4","TS5")] <- 1
+pred[paste0("I", 31:40),] <- 0
+pred[paste0("I", 31:40),paste0("I", 31:40)] <- 1
+pred[paste0("I", 31:40),c("TS1","TS2","TS3","TS5")] <- 1
+pred[paste0("I", 41:50),] <- 0
+pred[paste0("I", 41:50),paste0("I", 41:50)] <- 1
+pred[paste0("I", 41:50),c("TS1","TS2","TS3","TS4")] <- 1
+pred[,colnames(cov)] <- 1 #covariates as predictors for all items
+pred <- pred*ini$predictorMatrix
+pred
+```
+
+##Apply final imputations
+imp1 for items and total scores with passive MI; imp2 total scores only form other ts and covariates
+```{r}
+imp1 <- mice(data, m=15, meth=meth,pred=pred, maxit=10, seed=12354, print=FALSE)
+tsdata <- data.frame(ts, cov)
+imp2 <- mice(tsdata, 15,maxit=10,seed=61085,print=FALSE)
+```
+
+### Check iteration plots
+```{r}
+plot(imp1, paste0("TS",1:5))
+plot(imp2, paste0("TS",1:5))
+```
+
+##Combine imputations
+combine imputations and select (per questionnaire) the ts from imp1 for persons with <70% of items missing; and the ts from imp2 for persons with >70% of items missing (in a questionnaire).
+
+First make indicators for each q if missing <70%:
+```{r}
+calculate_i <- function(x,nq,k){
+  ind <- matrix(0,nrow=nrow(x), ncol=(nq))
+
+  for (q in 1:(nq)){
+    ind[,q] <- apply(x[,(((q*k[q])-k[q])+1):(q*k[q])],1,function(x) {sum(is.na(x))/length(x)})
+  }
+  colnames(ind) <- paste("TS",1:nq,sep="")
+  ind <- ifelse(ind <0.7,1,0)
+  ind
+}
+indicator <- calculate_i(x=data, nq=5, k=c(10,10,10,10,10))
+```
+
+Then select correct TS from each imputation.
+```{r}
+implist <- lapply(1:15, function(x){
+  x1 <- complete (imp1, x)
+  x2 <- complete(imp2, x)
+  tsimp <- lapply(1:nq, function(x){
+    ifelse(indicator[,x]==1, x1[,paste0("TS",x)], x2[,paste0("TS",x)] )
+  })
+  tsimp <- data.frame(tsimp)
+  colnames(tsimp) <- paste0("impTS",1:nq)
+  data.frame(x1,tsimp)
+})
+```
+
+Combine data in an imputation list for analysis and test realation between TS1 and TS3
+```{r}
+impdata <- imputationList (implist)
+fit <- with (impdata, lm(impTS1~impTS3 )) 
+summary(pool (fit))
+
+```
+
