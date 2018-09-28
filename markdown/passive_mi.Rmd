@@ -5,7 +5,7 @@ date: "28 september 2018"
 output: html_document
 ---
 
-```{r setup, include=TRUE, echo=FALSE}
+```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(mice)
 library(mitools)
@@ -13,6 +13,12 @@ library(dmo)
 ```
 
 This document demonstrates how to perform passive multiple imputation in a fictive simulated dataset with five questionnaries each containing 10 items. In this document the following packages are used: `mice`, `mitools` and `dmo`. 
+
+```{r} 
+library(mice)
+library(mitools)
+library(dmo)
+```
 
 
 ## Generate simulated data
@@ -31,7 +37,7 @@ x <- data.frame(x,cov)
 
 ```
 
-### Generate missing values
+###Generate missing values
 Missing values are generated with the MAR mechanism for 25% of the subjects with a random pattern. Missings are only generated in the item scores (not in the covariates).
 
 ```{r}
@@ -45,14 +51,15 @@ colnames(x) <- c(paste0("I",1:sum(k)),c("cov1", "cov2", "cov3") )
 ```
 
 
-###calculate total scores for questionnaires
+###Calculate total scores for questionnaires
 ```{r}
 ts <- dmo::calculate_ts(x, nq=5,k= c(10,10,10,10,10))
 data <- data.frame(x,ts)
 ```
 
-## Passive multiple imputation
+##Passive multiple imputation
 ###set up imputation model
+####Methods
 First the methods are adapted for the questionnaire total scores.
 ```{r}
 ini <- mice(data, max=0, print=FALSE)
@@ -68,7 +75,7 @@ for(q in seq_along(1:nq)){
 meth
 ```
 
-
+####Predictor matrix
 The the predictor matrix is adapted such that items are imputed by items own questionnaire and other TSs.
 In predictor matrix: target variable mi is in row and column variables are predictors
 ```{r}
@@ -101,7 +108,7 @@ tsdata <- data.frame(ts, cov)
 imp2 <- mice(tsdata, 15,maxit=10,seed=61085,print=FALSE)
 ```
 
-### Check iteration plots
+###Check iteration plots
 ```{r}
 plot(imp1, paste0("TS",1:5))
 plot(imp2, paste0("TS",1:5))
@@ -139,7 +146,8 @@ implist <- lapply(1:15, function(x){
 })
 ```
 
-Combine data in an imputation list for analysis and test realation between TS1 and TS3
+##Analyze and pool
+Save data in an imputation list for analysis and test relation between TS1 and TS3
 ```{r}
 impdata <- imputationList (implist)
 fit <- with (impdata, lm(impTS1~impTS3 )) 
