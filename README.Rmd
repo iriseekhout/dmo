@@ -8,7 +8,7 @@ output:
 
 #dmo: Don't Miss Out
 
-This package contains functions and scripts to help work and deal with missing data. Most parts were made for the Don't Miss Out! project that focussed on the valuable information missing data can hold. In this project methods to deal with missing data, in mainly questionnaire data, were investigated. 
+This package contains functions and scripts to help work and deal with missing data. Most parts were made for the Don't Miss Out! project that focussed on the valuable information incomplete data can hold. In this project methods to deal with missing data, in mainly questionnaire data, were investigated. 
 
 ##Installation
 
