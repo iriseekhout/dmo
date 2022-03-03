@@ -10,9 +10,11 @@ knitr::opts_chunk$set(echo = TRUE)
 library(mice)
 library(mitools)
 library(dmo)
+
+##note - this markdown is published as post on iriseekhout.com and as copy on missingdata.nl
 ```
 
-This document demonstrates how to perform passive multiple imputation in a fictive simulated dataset with five questionnaries each containing 10 items. In this document the following packages are used: `mice`, `mitools` and `dmo`. 
+This document demonstrates how to perform passive multiple imputation in a fictive simulated dataset that contains five multi-item questionnaires each containing 10 items. In this document the following packages are used: `mice`, `mitools` and `dmo`. 
 
 ```{r} 
 library(mice)
@@ -22,45 +24,90 @@ library(dmo)
 
 
 ## Generate simulated data
+
 Data are generated for 100 subjects. Each subjects has observations for 5 questionnaires and 3 covariates.
+
 ```{r }
 #generate questionnaire data
-k<- c(10,10,10,10,10)
+k <- c(10,10,10,10,10)
 nq <- 5
-x <- gen_qdata(n=100, nq=nq, k= k)
+x <- dmo::gen_qdata(n=100, nq=nq, k= k)
 
 #generate covariate data
 cov <- MASS::mvrnorm(n=100, mu=c(5,5,5), Sigma=matrix(c(10,1,1,1,10,1,1,1,10),3,3))
 colnames(cov) <- c("cov1", "cov2", "cov3")
 
+#combine in data.frame
 x <- data.frame(x,cov)
 
 ```
 
-###Generate missing values
+### Generate missing values
+
 Missing values are generated with the MAR mechanism for 25% of the subjects with a random pattern. Missings are only generated in the item scores (not in the covariates).
 
 ```{r}
 alpha <- 0.25
+
+#regerate 2 random patterns for missing item data
 pattern <- matrix(c(sample(c(0,1), size=2*sum(k),replace = TRUE)),nrow=2)
 pattern <- cbind(pattern, matrix(c(1,1,1,1,1,1),nrow=2))
+pattern
+```
+
+```{R}
+#apply each pattern with equal frequency and equal odds
 f <- c(0.5,0.5)
 g <- c(4,4)
+
+#generate missings in the data
 x <- MAR(x,alpha,pattern,f,g)
 colnames(x) <- c(paste0("I",1:sum(k)),c("cov1", "cov2", "cov3") )
+
+head(x, 15)
 ```
 
 
-###Calculate total scores for questionnaires
+### Calculate total scores for questionnaires
+
+Calculate the total scores (sum scores) for each questionnaire, only when all items are observed.
 ```{r}
 ts <- dmo::calculate_ts(x, nq=5,k= c(10,10,10,10,10))
 data <- data.frame(x,ts)
 ```
 
-##Passive multiple imputation
-###set up imputation model
-####Methods
-First the methods are adapted for the questionnaire total scores.
+
+## Passive multiple imputation
+
+In passive multiple imputation, the item scores are imputed and then during the imputation, the total score is calculated based on the imputed item scores. These total scores can then be used as predictors for imputations of other variables.
+
+There are 2 imputation models that are used in this procedure. 
+
+1. The total score of the questionnaires are imputed directly. This model only uses the total scores of the questionnaires an the three covariates. These imputed total scores are used for the subjects that have too many item scores missing, i.e. > 75%.
+2. The item scores of the questionnaires are imputed, and the total scores are passively imputed, by re-calculating these after each imputation iteration. The re-calculated total scores are used as predictors to impute items from other questionnaires. 
+
+### Initialize imputation model for total score imputation
+
+For this model, we can use the default settings used in `mice`.
+
+```{r}
+tsdata <- data.frame(ts, cov)
+ini <- mice(tsdata, max=0, print=FALSE)
+ini$meth
+ini$predictorMatrix
+
+
+```
+
+
+### Set up imputation model for passive imputation
+
+For the passive imputation model, we need to adapt the methods for the total scores, and the predictor matrix for the items. 
+
+#### Methods
+
+First the imputation method is adapted for the questionnaire total scores.
+
 ```{r}
 ini <- mice(data, max=0, print=FALSE)
 meth <- ini$meth
@@ -72,12 +119,15 @@ k <- c(10,10,10,10,10)
 for(q in seq_along(1:nq)){
   meth[paste0("TS",q)] <- paste0("~I(", paste(paste0("I",1:k[q]), collapse="+"), ")")
 }
-meth
+meth[c("TS1", "TS2", "TS3", "TS4", "TS5")]
 ```
 
-####Predictor matrix
-The the predictor matrix is adapted such that items are imputed by items own questionnaire and other TSs.
-In predictor matrix: target variable mi is in row and column variables are predictors
+#### Predictor matrix
+
+The the predictor matrix is adapted such that items are imputed by items from their own questionnaire and other total scores.
+In predictor matrix: target variable is in row and the predictor variables are in the column. Below the predictor matrix for imputing the first 10 items is shown. 
+
+
 ```{r}
 pred <- ini$predictorMatrix
 pred[paste0("I", 1:10),] <- 0
@@ -97,27 +147,34 @@ pred[paste0("I", 41:50),paste0("I", 41:50)] <- 1
 pred[paste0("I", 41:50),c("TS1","TS2","TS3","TS4")] <- 1
 pred[,colnames(cov)] <- 1 #covariates as predictors for all items
 pred <- pred*ini$predictorMatrix
-pred
+head(pred, 10)
 ```
 
-##Apply final imputations
-imp1 for items and total scores with passive MI; imp2 total scores only form other ts and covariates
+
+
+## Apply final imputations
+
+For both imputation procedures we use 15 imputations and 10 iterations. The object `imp1` contains the imputations for the total scores only from other total scores and the thee covariates. The object `imp2` for items and total scores with passive imputation.
+
 ```{r}
-imp1 <- mice(data, m=15, meth=meth,pred=pred, maxit=10, seed=12354, print=FALSE)
-tsdata <- data.frame(ts, cov)
-imp2 <- mice(tsdata, 15,maxit=10,seed=61085,print=FALSE)
+imp1 <- mice(tsdata, 15,maxit=10,seed=61085,print=FALSE)
+imp2 <- mice(data, m=15, meth=meth,pred=pred, maxit=10, seed=12354, print=FALSE)
 ```
 
-###Check iteration plots
+### Check iteration plots
+
+The the imputations for the Total scores in the total score imputation (`imp1`) passive imputation procedure (`imp2`).
+
 ```{r}
 plot(imp1, paste0("TS",1:5))
 plot(imp2, paste0("TS",1:5))
 ```
 
-##Combine imputations
-combine imputations and select (per questionnaire) the ts from imp1 for persons with <70% of items missing; and the ts from imp2 for persons with >70% of items missing (in a questionnaire).
+## Combine imputations
 
-First make indicators for each q if missing <70%:
+Combine imputations and select (per questionnaire) the ts from imp1 for persons with <75% of items missing; and the ts from imp2 for persons with >75% of items missing (in a questionnaire).
+
+First make indicators for each q if missing <75%:
 ```{r}
 calculate_i <- function(x,nq,k){
   ind <- matrix(0,nrow=nrow(x), ncol=(nq))
@@ -126,7 +183,7 @@ calculate_i <- function(x,nq,k){
     ind[,q] <- apply(x[,(((q*k[q])-k[q])+1):(q*k[q])],1,function(x) {sum(is.na(x))/length(x)})
   }
   colnames(ind) <- paste("TS",1:nq,sep="")
-  ind <- ifelse(ind <0.7,1,0)
+  ind <- ifelse(ind <0.75,1,0)
   ind
 }
 indicator <- calculate_i(x=data, nq=5, k=c(10,10,10,10,10))
@@ -135,10 +192,10 @@ indicator <- calculate_i(x=data, nq=5, k=c(10,10,10,10,10))
 Then select correct TS from each imputation.
 ```{r}
 implist <- lapply(1:15, function(x){
-  x1 <- complete (imp1, x)
+  x1 <- complete(imp1, x)
   x2 <- complete(imp2, x)
   tsimp <- lapply(1:nq, function(x){
-    ifelse(indicator[,x]==1, x1[,paste0("TS",x)], x2[,paste0("TS",x)] )
+    ifelse(indicator[,x]==1, x2[,paste0("TS",x)], x1[,paste0("TS",x)] )
   })
   tsimp <- data.frame(tsimp)
   colnames(tsimp) <- paste0("impTS",1:nq)
@@ -146,10 +203,12 @@ implist <- lapply(1:15, function(x){
 })
 ```
 
-##Analyze and pool
+## Analyze and pool
+
 Save data in an imputation list for analysis and test relation between TS1 and TS3
+
 ```{r}
-impdata <- imputationList (implist)
+impdata <- imputationList(implist)
 fit <- with (impdata, lm(impTS1~impTS3 )) 
 summary(pool (fit))
 
