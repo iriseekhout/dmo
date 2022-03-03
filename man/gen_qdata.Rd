@@ -16,6 +16,9 @@ gen_qdata(n, nq, k, likert = FALSE)
 
 \item{likert}{continuous scores transformed to likert item scores}
 }
+\value{
+data.frame with `n` rows and `nq * k` columns
+}
 \description{
 Generate questionnaire data
 A function to generate questionnaire data with normally distributed item score with a mean of 0.

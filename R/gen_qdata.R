@@ -5,10 +5,10 @@
 #' @param nq number of questionnaires
 #' @param k vector of length nq indicating number of items per questionnaire
 #' @param likert continuous scores transformed to likert item scores
-#'
-#' @return
+#' 
+#' @return data.frame with `n` rows and `nq * k` columns
 #' @export
-gen_qdata <- function(n,nq,k,likert=FALSE){
+gen_qdata <- function(n, nq ,k , likert=FALSE){
   if(length(k) != nq) stop("k is not the same length as number of questionnaires")
   sig <- matrix(1,nq*k,nq*k)
   diag(sig) <- 5
@@ -21,5 +21,5 @@ gen_qdata <- function(n,nq,k,likert=FALSE){
     x <- ifelse(x > -0.841621234& x<=-0.253347103,2,x)
     x <- ifelse(x <= -0.841621234,1, x)
   }
-  x
+  data.frame(x)
 }
