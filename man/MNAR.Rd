@@ -4,18 +4,29 @@
 \alias{MNAR}
 \title{Generate MNAR (missign not at random) data}
 \usage{
-MNAR(x, alpha, pattern, f, g = 4, a = pattern)
+MNAR(
+  x,
+  alpha,
+  pattern = "random",
+  f = rep(1/nrow(pattern)),
+  g = 4,
+  a = pattern
+)
 }
 \arguments{
 \item{x}{data frame where missing observations should be generated in.}
 
 \item{alpha}{proportion of cases that will get a missing data pattern}
 
-\item{pattern}{a matrix with ncol=ncol(data), nrow=numer of missing data patterns; for each patter 0 indicates missing and 1 observed.}
+\item{pattern}{a matrix with ncol=ncol(data), nrow=number of missing data 
+patterns; for each patter 0 indicates missing and 1 observed.
+`pattern = "random"` will generate `npattern` random patterns.}
 
 \item{f}{frequency of each pattern}
 
 \item{g}{the odds of the patterns to occur, the strength of the mechanism}
+
+\item{npattern}{the number of patterns when patterns are randomly generated.}
 }
 \value{
 A data frame that contains missing observations

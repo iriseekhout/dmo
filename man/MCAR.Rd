@@ -2,16 +2,20 @@
 % Please edit documentation in R/MCAR.R
 \name{MCAR}
 \alias{MCAR}
-\title{Generate MCAR (missign completely at random) data}
+\title{Generate MCAR (missing completely at random) data}
 \usage{
-MCAR(x, alpha, pattern, f)
+MCAR(x, alpha, pattern = "random", npattern = 1, f = rep(1/nrow(pattern)))
 }
 \arguments{
 \item{x}{data frame where missing observations should be generated in.}
 
 \item{alpha}{proportion of cases that will get a missing data pattern}
 
-\item{pattern}{a matrix with ncol=ncol(data), nrow=numer of missing data patterns; for each patter 0 indicates missing and 1 observed.}
+\item{pattern}{a matrix with ncol=ncol(data), nrow = number of missing data 
+patterns; for each patter 0 indicates missing and 1 observed. 
+`pattern = "random"` will generate `npattern` random patterns}
+
+\item{npattern}{the number of patterns when patterns are randomly generated.}
 
 \item{f}{frequency of each pattern}
 }
@@ -19,7 +23,7 @@ MCAR(x, alpha, pattern, f)
 A data frame that contains missing observations
 }
 \description{
-Generate MCAR (missign completely at random) data
+Generate MCAR (missing completely at random) data
 }
 \examples{
 library(MASS)

@@ -4,14 +4,26 @@
 \alias{MAR}
 \title{Generate MAR (missign at random) data}
 \usage{
-MAR(x, alpha, pattern, f, g = 4, a = pattern)
+MAR(
+  x,
+  alpha,
+  pattern = "random",
+  npattern = 1,
+  f = rep(1/nrow(pattern)),
+  g = 4,
+  a = pattern
+)
 }
 \arguments{
 \item{x}{data frame where missing observations should be generated in.}
 
 \item{alpha}{proportion of cases that will get a missing data pattern}
 
-\item{pattern}{a matrix with ncol=ncol(data), nrow=number of missing data patterns; for each patter 0 indicates missing and 1 observed.}
+\item{pattern}{a matrix with ncol=ncol(data), nrow=number of missing data 
+patterns; for each pattern 0 indicates missing and 1 observed. 
+`pattern = "random"` will generate `npattern` random patterns.}
+
+\item{npattern}{the number of patterns when patterns are randomly generated.}
 
 \item{f}{frequency of each pattern}
 

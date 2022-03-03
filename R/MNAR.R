@@ -3,7 +3,10 @@
 #'
 #' @param x data frame where missing observations should be generated in.
 #' @param alpha proportion of cases that will get a missing data pattern
-#' @param pattern a matrix with ncol=ncol(data), nrow=numer of missing data patterns; for each patter 0 indicates missing and 1 observed.
+#' @param pattern a matrix with ncol=ncol(data), nrow=number of missing data 
+#' patterns; for each patter 0 indicates missing and 1 observed.
+#' `pattern = "random"` will generate `npattern` random patterns. 
+#' @param npattern the number of patterns when patterns are randomly generated.
 #' @param f frequency of each pattern
 #' @param g the odds of the patterns to occur, the strength of the mechanism
 #'
@@ -18,15 +21,41 @@
 #' f <- c(0.5,0.5)
 #' g <- c(4,4)
 #' MNAR(x,alpha,pattern,f,g)
-MNAR <- function(x, alpha, pattern, f,g=4, a=pattern)
+MNAR <- function(x, 
+                 alpha,
+                 pattern = "random", 
+                 f = rep(1/nrow(pattern)), 
+                 g = 4, 
+                 a = pattern)
 {
+   xobs <- testcand1 <- testpip <- tests <- testincompl <- testcand2 <- testresp <- fltest <- cltest<- bltest <- sscore <-  list()
+  
+   
+   if(is.character(pattern) & pattern[1] == "random"){
+     pattern <- matrix(c(sample(c(0,1), size=ncol(x)*npattern,replace = TRUE)),nrow=npattern)
+     
+   }
+   
+  if(is.data.frame(pattern) | is.vector(pattern) | is.matrix(pattern)){
+    if(ncol(pattern) == ncol(x)) {
+      pattern <- as.matrix(pattern)}
+    if(ncol(pattern) != ncol(x)) {
+      stop("The length of the patterns is not equal to ncol(x).")}
+  }
+   
+  if(!is.matrix(pattern)){
+    warning("The defined pattern is not a matrix, vector or data.frame. A random pattern is generated")
+    pattern <- "random"
+  }
+ 
+  
   quant=data.matrix(c(rep(0.5,nrow(pattern))))
   g=data.matrix(c(rep(g,nrow(pattern))))
-  xobs <- testcand1 <- testpip <- tests <- testincompl <- testcand2 <- testresp <- fltest <- cltest<- bltest <- sscore <-  list()
+  orig <- x
   x <- data.matrix(x)
   n <- NROW(x)
   m <- NCOL(x)
-  sf <- sum (f)
+  sf <- sum(f)
   f <- data.matrix (f/sf)
   u <- runif(n)
   res <- outer(u, cumsum(f), ">")   # vervanging voor loop
@@ -83,6 +112,7 @@ MNAR <- function(x, alpha, pattern, f,g=4, a=pattern)
   if ( any(bool == 1) )  {resp[which(bool !=0), c(1:m)] <- matrix((pattern[cand,]), byrow = T)}  # vervanging voor loop
   testresp <- (apply (resp, 1, prod))
   xobs <- ifelse(resp==1, x , NA)
+  if(class(orig) == "data.frame") xobs <- data.frame(xobs)
   xobs
  # list (xobs=xobs, testcand1=testcand1, testincompl=testincompl, testcand2=testcand2, testresp=testresp, testpip=testpip, tests=tests, fltest=fltest, cltest=cltest, bltest=bltest, sscore=sscore)
 }
