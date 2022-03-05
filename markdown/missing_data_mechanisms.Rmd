@@ -1,0 +1,44 @@
+---
+title: "Missing data mechanisms"
+author: "Iris Eekhout"
+date: "5-3-2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+In research, missing data occur when a data value is unavailable. Many empirical studies encounter missing data. Missing data can occur in many stages of research due to many different causes in many different forms. When invited respondents do not participate in the study there is *non-response*. It is also possible that for some particpants there are missing values in measured variables tahta are used as a predictor, covariate or outcome, i.e. *intermittend missing data*. When participants in a longitudinal study do not show up at one or more repeated measurement occasions, the missing data are often referred to as *drop-out* or *loss to follow up*. 
+
+Each type of missing data may have different reasons, and also different implication for the methods to deal with the missing data. To get more insight in the missing data problem, the reasons for missing data are differentiated in several missing data mechanisms. These mechanisms describe the underlying cause of missing data and were first described by Rubin (1976). Rubin distinguished three missing data mechanisms: **missing completely at random (MCAR)**, **missing at random (MAR)**, and **missing not at random (MNAR)**. These missing data mechanisms are important since they are assumptions for the missing data methods. It must be noted that the missing data mechanisms are not characteristics of an entire data set, but the mechanisms are merely assumptions which apply to specific analyses methods. 
+
+
+## Missing completely at random (MCAR)
+
+Missing data are MCAR when the probability of missing data on a variable is unrelated to any other measured variable and is unrelated to the variable with missing values itself. In other words the missingness on the variable is completely unsystematic. For example when data are missing for respondents for which their questionnaire was lost in the mail. 
+
+```{r}
+
+
+```
+
+Missing completely at random (MCAR) is the only missing data mechanism that can actually be verified. This assumption can be tested by separating the missing and the complete cases and examine the group characteristics. If characteristics are not equal for both groups, the MCAR assumption does not hold. 
+
+## Missing at random (MAR)
+
+Missing data are missing at random (MAR) when the probability of missing data on a variable is related to some other measured variable in the model, but not to the value of the variable with missing values itself. For example, only younger people have missing values for IQ. In that case the probability of missing data on IQ is related to age. The assumption that the mechanism is MAR, can unfortunately not be confirmed, because it cannot be tested if the probability of missing data on a variable is solely a function of other measured variables. It is recommended to incorporate correlates of missingness into the missing data handling procedure to diminish bias and improve the chances of satisfying the MAR assumption.
+
+
+## Missing not at random (MNAR)
+
+Data are missing not at random (MNAR) when the missing values on a variable are related to the values of that variable itself, even after controlling for other variables. For example, when data are missing on IQ and only the people with low IQ values have missing observations for this variable. A problem with the MNAR mechanism is that it is impossible to verify that scores are MNAR without knowing the missing values.
+
+
+
+## Assuming the missing data mechanism
+
+There are two main ways to make an assumption about the missing data mechanism. The first and most important one is ‘common sense’. By what is known about the data collection process and the data in general, most researchers have an idea about the reasons for the missing data. It is very important to take this knowledge into account when making an assumption about the missing data mechanism.
+
+A second way to make an assumption about the missing data mechanism is by statistical testing. The data can be separated into two groups, one group with participants with complete data on variable A (e.g., IQ) and one group with participants with missing data on variable A (e.g., IQ). We can create a dichotomous variable (i.e, missing data indicator) that indicates whether data on IQ are missing or complete. Then we can test for group differences with a t-test. For example we can test whether both groups differ in age. If there are differences we can conclude that our missing data are NOT complete at random, so not MCAR. We can also use the missing data indicator variable as outcome in a logistic regression model and test whether other variables in the data are related to that outcome. If we find variables related to the missing data indicator we can conclude that data are not MCAR. If we find no relations at all, we might be able to conclude that missing data are MCAR. However, we can never distinguish between MAR or MNAR. We can only test if data are MCAR or not MCAR. Furthermore, it is always important to combine statistical testing with common sense.
