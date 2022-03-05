@@ -1,5 +1,5 @@
 ---
-title: "Missing data analysis"
+title: "Missing value analysis"
 author: "Iris Eekhout"
 date: "2-3-2022"
 output: html_document
@@ -13,9 +13,9 @@ library(dplyr)
 library(tidyr)
 ```
 
-Missing observations are defined as `NA` in R. Missing data can have different implications for data summaries, analyses and conclusions based on the data with missing observations. In this post, different types of missing data are reviewed and explored in some data examples.
+Missing observations are defined as `NA` in R. Missing data can have different implications for data summaries, analyses and conclusions based on the data with missing values. In this post, different types of missing data are reviewed and explored in data examples.
 
-In the example data that is generated with the `mvrnorm` function from the `MASS` package, there are missings created with the  `MCAR` function from the `dmo` package. The missings are created completely at random. 
+In the example data that is generated with the `mvrnorm` function from the `MASS` package, there are missing values created with the  `MCAR` function from the `dmo` package. The missing data are created completely at random. 
 
 
 ```{R}
@@ -56,7 +56,20 @@ datm %>%
 
 ```
 
+When data with missing values are analyzed, many analysis methods only use the rows that have are fully observed. This is called a complete-case analysis. The data are then *listwise* deleted. To analyze the implications of the missing values in the data for this analysis strategy we have to evaluate the number of rows that contain missing values and the rows that contain no missing values.
 
+```{r}
+
+datm %>% 
+  is.na %>%
+  data.frame() %>%
+  mutate(n_miss = rowSums(.),
+         missing = ifelse(n_miss > 0, "misings", "no missing")) %>%
+  group_by(missing) %>%
+  summarise(n = n())
+
+
+```
 
 
 ## Missing data patterns
