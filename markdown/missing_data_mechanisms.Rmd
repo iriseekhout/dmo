@@ -7,6 +7,21 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(dmo)
+library(ggplot2)
+#example dataset n = 100
+library(MASS)
+library(psych)
+library(knitr)
+library(kableExtra)
+library(dplyr)
+set.seed(7869)
+
+x <- mvrnorm(n=1000,mu=c(0,0,0), Sigma=matrix(c(5,1,1,1,5,1,1,1,5),3,3)) %>% 
+  data.frame() %>%
+  mutate(X2 = factor(ifelse( X2 > 0,"2", "1")))
+
+theme_set(theme_light())
 ```
 
 
@@ -17,10 +32,28 @@ Each type of missing data may have different reasons, and also different implica
 
 ## Missing completely at random (MCAR)
 
-Missing data are MCAR when the probability of missing data on a variable is unrelated to any other measured variable and is unrelated to the variable with missing values itself. In other words the missingness on the variable is completely unsystematic. For example when data are missing for respondents for which their questionnaire was lost in the mail. 
+Missing data are MCAR when the probability of missing data on a variable is unrelated to any other measured variable and is unrelated to the variable with missing values itself. In other words the missingness on the variable is completely unsystematic. For example questionnaire responses get lost in the mail. 
 
 ```{r}
+mcar <- MCAR(x, alpha = 0.5, pattern = matrix(c(0,1,1), nrow = 1))
+mcar <- mcar %>% mutate(R1 = is.na(X1))
 
+describe(x) %>% kable(caption = "Description of fully observed data", digits = 2) %>% kable_styling()
+
+describe(mcar) %>% kable(caption = "Description of MCAR data - 25% ", digits = 2) %>% kable_styling()
+
+
+colors <- c("complete" = "blue", "mcar" = "red")
+ggplot() +
+  geom_histogram(data = x, aes(x = X1, fill = "complete"), alpha = 0.5)+
+  geom_histogram(data = mcar, aes(x = X1, fill = "mcar"), alpha = 0.5)+
+    labs(x = "X1",
+         y = "Frequency",
+         fill = "Data set") +
+    scale_color_manual(values = colors)
+
+ggplot() +
+  geom_boxplot(data = mcar, aes(x =R1, y = X3))
 
 ```
 
@@ -31,10 +64,78 @@ Missing completely at random (MCAR) is the only missing data mechanism that can 
 Missing data are missing at random (MAR) when the probability of missing data on a variable is related to some other measured variable in the model, but not to the value of the variable with missing values itself. For example, only younger people have missing values for IQ. In that case the probability of missing data on IQ is related to age. The assumption that the mechanism is MAR, can unfortunately not be confirmed, because it cannot be tested if the probability of missing data on a variable is solely a function of other measured variables. It is recommended to incorporate correlates of missingness into the missing data handling procedure to diminish bias and improve the chances of satisfying the MAR assumption.
 
 
+```{r}
+mar <- MAR(x, alpha = 0.5, pattern =  matrix(c(0,1,1), nrow = 1))
+mar <- mar %>% mutate(R1 = is.na(X1))
+
+describe(x) %>% kable(caption = "Description of fully observed data", digits = 2) %>% kable_styling()
+
+describe(mar) %>% kable(caption = "Description of MAR data - 25% ", digits = 2) %>% kable_styling()
+
+
+colors <- c("complete" = "blue", "mar" = "red")
+ggplot() +
+  geom_histogram(data = x, aes(x = X1, fill = "complete"), alpha = 0.5)+
+  geom_histogram(data = mar, aes(x = X1, fill = "mar"), alpha = 0.5)+
+    labs(x = "X1",
+         y = "Frequency",
+         fill = "Data set") +
+    scale_color_manual(values = colors)
+
+
+mar %>% group_by(R1) %>% summarize(X2_mean = mean(X2, na.rm = TRUE),
+                                   X3_mean = mean(X3, na.rm = TRUE)) %>% 
+  kable(digits = 2) %>% kable_styling()
+
+
+
+ggplot() +
+  geom_boxplot(data = mar, aes(x =R1, y = X3))
+```
+
 ## Missing not at random (MNAR)
 
 Data are missing not at random (MNAR) when the missing values on a variable are related to the values of that variable itself, even after controlling for other variables. For example, when data are missing on IQ and only the people with low IQ values have missing observations for this variable. A problem with the MNAR mechanism is that it is impossible to verify that scores are MNAR without knowing the missing values.
 
+
+
+```{r}
+mnar <- MNAR(x, alpha = 0.5, pattern =  matrix(c(0,1,1), nrow = 1))
+mnar <- mnar %>% mutate(R1 = is.na(X1))
+
+describe(x) %>% kable(caption = "Description of fully observed data", digits = 2) %>% kable_styling()
+
+describe(mnar) %>% kable(caption = "Description of MNAR data - 25% ", digits = 2) %>% kable_styling()
+
+
+colors <- c("complete" = "blue", "mnar" = "red")
+ggplot() +
+  geom_histogram(data = x, aes(x = X1, fill = "complete"), alpha = 0.5)+
+  geom_histogram(data = mnar, aes(x = X1, fill = "mnar"), alpha = 0.5)+
+    labs(x = "X1",
+         y = "Frequency",
+         fill = "Data set") +
+    scale_color_manual(values = colors)
+
+
+
+
+mnar %>% group_by(R1) %>% summarize(X2_mean = mean(X2, na.rm = TRUE),
+                                   X3_mean = mean(X3, na.rm = TRUE)) %>% 
+  kable(digits = 2) %>% kable_styling()
+
+
+
+ggplot() +
+  geom_boxplot(data = mnar, aes(x =R1, y = X3))
+
+
+#combine complete x1 en missing x1
+dat_mnar <- data.frame(Obs_X1 = x$X1, MNAR_X1 = mnar$R1)
+ggplot() +
+  geom_boxplot(data = dat_mnar, aes(x = MNAR_X1, y = Obs_X1))
+
+```
 
 
 ## Assuming the missing data mechanism
