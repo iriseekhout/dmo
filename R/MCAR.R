@@ -72,7 +72,7 @@ MCAR <- function(x,
   if ( any(bool == 1) )  {resp[which(bool !=0), c(1:m)] <- matrix((pattern[cand,]), byrow = T)}
   testresp <- (apply (resp, 1, prod))
   xobs <- ifelse(resp==1, x , NA)
-  if(class(orig) == "data.frame") xobs <- data.frame(xobs)
+  if(is.data.frame(orig)) xobs <- data.frame(xobs)
   xobs
   #list (xobs=xobs, testcand1=testcand1, testincompl=testincompl, testcand2=testcand2, testresp=testresp)
 }
