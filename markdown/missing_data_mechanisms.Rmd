@@ -15,11 +15,11 @@ library(psych)
 library(knitr)
 library(kableExtra)
 library(dplyr)
+library(tidyr)
 set.seed(7869)
 
 x <- mvrnorm(n=1000,mu=c(0,0,0), Sigma=matrix(c(5,1,1,1,5,1,1,1,5),3,3)) %>% 
-  data.frame() %>%
-  mutate(X2 = factor(ifelse( X2 > 0,"2", "1")))
+  data.frame() 
 
 theme_set(theme_light())
 ```
@@ -34,112 +34,229 @@ Each type of missing data may have different reasons, and also different implica
 
 Missing data are MCAR when the probability of missing data on a variable is unrelated to any other measured variable and is unrelated to the variable with missing values itself. In other words the missingness on the variable is completely unsystematic. For example questionnaire responses get lost in the mail. 
 
-```{r}
-mcar <- MCAR(x, alpha = 0.5, pattern = matrix(c(0,1,1), nrow = 1))
-mcar <- mcar %>% mutate(R1 = is.na(X1))
 
+```{r echo = FALSE}
 describe(x) %>% kable(caption = "Description of fully observed data", digits = 2) %>% kable_styling()
+```
 
-describe(mcar) %>% kable(caption = "Description of MCAR data - 25% ", digits = 2) %>% kable_styling()
+When we create MCAR data for 50% of the subject in variable `X1` we see that the statistics for variable `X1` have not changed much:
+```{r}
+set.seed(8965)
+mcar <- MCAR(x, alpha = 0.5, pattern = matrix(c(0,1,1), nrow = 1))
+```
 
+```{r echo = FALSE}
+describe(mcar) %>% kable(caption = "Description of MCAR data - 50% ", digits = 2) %>% kable_styling()
+```
 
+The distribution of the fully observed version of the variable is depicted in blue and the remaining data due to missings is red. As a result the missing part of the data are the blue parts of the graph. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+mcarplot <- x %>% mutate(file = "complete") %>%
+  bind_rows(mcar %>% mutate(file = "mcar"))
 colors <- c("complete" = "blue", "mcar" = "red")
-ggplot() +
-  geom_histogram(data = x, aes(x = X1, fill = "complete"), alpha = 0.5)+
-  geom_histogram(data = mcar, aes(x = X1, fill = "mcar"), alpha = 0.5)+
-    labs(x = "X1",
-         y = "Frequency",
-         fill = "Data set") +
-    scale_color_manual(values = colors)
+ggplot(mcarplot, aes(x = X1, fill = file)) +
+  geom_histogram( alpha = 0.5)+ 
+  scale_fill_manual(values = colors)+
+  facet_wrap(.~file)
+```
 
-ggplot() +
-  geom_boxplot(data = mcar, aes(x =R1, y = X3))
+We can create a missing data indicator variable `R1` to explore differences between the subjects with missing data and the subjects without missing data. 
+
+```{r}
+mcar <- mcar %>% mutate(R1 = is.na(X1))
+```
+
+```{r echo = FALSE}
+mcarbox <- mcar %>% pivot_longer(cols = c(X2, X3), names_to = "variable", values_to = "value")
+
+ggplot(data = mcarbox, aes(x = R1, y = value)) +
+  geom_boxplot() +
+  xlab("Missing data indicator (R1)") +
+  facet_wrap(.~variable)
+
 
 ```
 
 Missing completely at random (MCAR) is the only missing data mechanism that can actually be verified. This assumption can be tested by separating the missing and the complete cases and examine the group characteristics. If characteristics are not equal for both groups, the MCAR assumption does not hold. 
+
 
 ## Missing at random (MAR)
 
 Missing data are missing at random (MAR) when the probability of missing data on a variable is related to some other measured variable in the model, but not to the value of the variable with missing values itself. For example, only younger people have missing values for IQ. In that case the probability of missing data on IQ is related to age. The assumption that the mechanism is MAR, can unfortunately not be confirmed, because it cannot be tested if the probability of missing data on a variable is solely a function of other measured variables. It is recommended to incorporate correlates of missingness into the missing data handling procedure to diminish bias and improve the chances of satisfying the MAR assumption.
 
 
-```{r}
-mar <- MAR(x, alpha = 0.5, pattern =  matrix(c(0,1,1), nrow = 1))
-mar <- mar %>% mutate(R1 = is.na(X1))
 
+```{r echo = FALSE}
 describe(x) %>% kable(caption = "Description of fully observed data", digits = 2) %>% kable_styling()
-
-describe(mar) %>% kable(caption = "Description of MAR data - 25% ", digits = 2) %>% kable_styling()
-
-
-colors <- c("complete" = "blue", "mar" = "red")
-ggplot() +
-  geom_histogram(data = x, aes(x = X1, fill = "complete"), alpha = 0.5)+
-  geom_histogram(data = mar, aes(x = X1, fill = "mar"), alpha = 0.5)+
-    labs(x = "X1",
-         y = "Frequency",
-         fill = "Data set") +
-    scale_color_manual(values = colors)
-
-
-mar %>% group_by(R1) %>% summarize(X2_mean = mean(X2, na.rm = TRUE),
-                                   X3_mean = mean(X3, na.rm = TRUE)) %>% 
-  kable(digits = 2) %>% kable_styling()
-
-
-
-ggplot() +
-  geom_boxplot(data = mar, aes(x =R1, y = X3))
 ```
+
+When we create MAR data for 50% of the subject in variable `X1` we see that the statistics for variable `X1` have changed:
+```{r}
+set.seed(4665)
+mar <- MAR(x, alpha = 0.5, pattern = matrix(c(0,1,1), nrow = 1))
+```
+
+```{r echo = FALSE}
+describe(mar) %>% kable(caption = "Description of MAR data - 50% ", digits = 2) %>% kable_styling()
+```
+
+The distribution of the fully observed version of the variable is depicted in blue and the remaining data due to missings is red. We can compare the two distributions. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+marplot <- x %>% mutate(file = "complete") %>%
+  bind_rows(mar %>% mutate(file = "mar"))
+colors <- c("complete" = "blue", "mar" = "red")
+ggplot(marplot, aes(x = X1, fill = file)) +
+  geom_histogram( alpha = 0.5)+ 
+  scale_fill_manual(values = colors)+
+  facet_wrap(.~file)
+```
+
+We can create a missing data indicator variable `R1` to explore differences between the subjects with missing data and the subjects without missing data. 
+
+```{r}
+mar <- mar %>% mutate(R1 = is.na(X1))
+```
+
+The difference between the group with missing values (TRUE) and the group without missing values (FALSE) shows that having missing data is related to the scores on the other variables. 
+
+```{r echo = FALSE}
+marbox <- mar %>% pivot_longer(cols = c(X2, X3), names_to = "variable", values_to = "value")
+
+ggplot(data = marbox, aes(x = R1, y = value)) +
+  geom_boxplot() +
+  xlab("Missing data indicator (R1)") +
+  facet_wrap(.~variable)
+
+```
+
+
+
 
 ## Missing not at random (MNAR)
 
 Data are missing not at random (MNAR) when the missing values on a variable are related to the values of that variable itself, even after controlling for other variables. For example, when data are missing on IQ and only the people with low IQ values have missing observations for this variable. A problem with the MNAR mechanism is that it is impossible to verify that scores are MNAR without knowing the missing values.
 
 
+```{r echo = FALSE}
+describe(x) %>% kable(caption = "Description of fully observed data", digits = 2) %>% kable_styling()
+```
+
+When we create MNAR data for 50% of the subject in variable `X1` we see that the statistics for variable `X1` have changed:
+```{r}
+set.seed(5476)
+mnar <- x %>% mutate(rand = runif(1000),
+                     X1 = ifelse(X1 > 0 & rand > 0.2, NA, X1), 
+                     X1 = ifelse(X1 < 0 & rand > 0.8, NA, X1)) %>%
+  select(-rand)
+```
+
+```{r echo = FALSE}
+describe(mnar) %>% kable(caption = "Description of MNAR data - 50% ", digits = 2) %>% kable_styling()
+```
+
+The distribution of the fully observed version of the variable is depicted in blue and the remaining data due to missings is red. We can compare the two distributions and see that missings occurred mostly in the higher values of `X1`. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+mnarplot <- x %>% mutate(file = "complete") %>%
+  bind_rows(mnar %>% mutate(file = "mnar"))
+colors <- c("complete" = "blue", "mnar" = "red")
+ggplot(mnarplot, aes(x = X1, fill = file)) +
+  geom_histogram( alpha = 0.5)+ 
+  scale_fill_manual(values = colors)+
+  facet_wrap(.~file)
+```
+
+We can create a missing data indicator variable `R1` to explore differences between the subjects with missing data and the subjects without missing data. 
 
 ```{r}
-mnar <- MNAR(x, alpha = 0.5, pattern =  matrix(c(0,1,1), nrow = 1))
 mnar <- mnar %>% mutate(R1 = is.na(X1))
+```
 
-describe(x) %>% kable(caption = "Description of fully observed data", digits = 2) %>% kable_styling()
+The difference between the group with missing values (TRUE) and the group without missing values (FALSE) shows that having missing data is related to the scores on the other variables. 
 
-describe(mnar) %>% kable(caption = "Description of MNAR data - 25% ", digits = 2) %>% kable_styling()
+```{r echo = FALSE}
+mnarbox <- mnar %>% pivot_longer(cols = c(X2, X3), names_to = "variable", values_to = "value")
 
-
-colors <- c("complete" = "blue", "mnar" = "red")
-ggplot() +
-  geom_histogram(data = x, aes(x = X1, fill = "complete"), alpha = 0.5)+
-  geom_histogram(data = mnar, aes(x = X1, fill = "mnar"), alpha = 0.5)+
-    labs(x = "X1",
-         y = "Frequency",
-         fill = "Data set") +
-    scale_color_manual(values = colors)
-
-
-
-
-mnar %>% group_by(R1) %>% summarize(X2_mean = mean(X2, na.rm = TRUE),
-                                   X3_mean = mean(X3, na.rm = TRUE)) %>% 
-  kable(digits = 2) %>% kable_styling()
-
-
-
-ggplot() +
-  geom_boxplot(data = mnar, aes(x =R1, y = X3))
-
-
-#combine complete x1 en missing x1
-dat_mnar <- data.frame(Obs_X1 = x$X1, MNAR_X1 = mnar$R1)
-ggplot() +
-  geom_boxplot(data = dat_mnar, aes(x = MNAR_X1, y = Obs_X1))
+ggplot(data = mnarbox, aes(x = R1, y = value)) +
+  geom_boxplot() +
+  xlab("Missing data indicator (R1)") +
+  facet_wrap(.~variable)
 
 ```
 
 
-## Assuming the missing data mechanism
 
-There are two main ways to make an assumption about the missing data mechanism. The first and most important one is ‘common sense’. By what is known about the data collection process and the data in general, most researchers have an idea about the reasons for the missing data. It is very important to take this knowledge into account when making an assumption about the missing data mechanism.
+## Evaluate the missing data mechanism
 
-A second way to make an assumption about the missing data mechanism is by statistical testing. The data can be separated into two groups, one group with participants with complete data on variable A (e.g., IQ) and one group with participants with missing data on variable A (e.g., IQ). We can create a dichotomous variable (i.e, missing data indicator) that indicates whether data on IQ are missing or complete. Then we can test for group differences with a t-test. For example we can test whether both groups differ in age. If there are differences we can conclude that our missing data are NOT complete at random, so not MCAR. We can also use the missing data indicator variable as outcome in a logistic regression model and test whether other variables in the data are related to that outcome. If we find variables related to the missing data indicator we can conclude that data are not MCAR. If we find no relations at all, we might be able to conclude that missing data are MCAR. However, we can never distinguish between MAR or MNAR. We can only test if data are MCAR or not MCAR. Furthermore, it is always important to combine statistical testing with common sense.
+Any information about the research process can provide valuable information that helps to evaluate and make assumptions about the missing data mechanism. By what is known about the data collection process and the data in general, most researchers have an idea about the reasons for the missing data. It is very important to take this knowledge into account when making an assumption about the missing data mechanism.
+
+### Missing data mechanisms
+
+* **Missing completely at random:** missing data is a completely random subsample of the observed data. 
+* **Missing at random:** probability of missing data is related to other measured variables.
+* **Missing not at random:** probability of missing data is related to the missing data itself, and other measured variables.
+
+### Testing the mechanisms
+
+The missing data mechanisms are defined by the probability that missing data occur. When this probability is totally not related to other measured variables, we can assume that the remaining sample is a totally random subsample (MCAR). 
+
+When *other measured variables* are related tot the probability of missing data, we can assume that the data are not MCAR. However, we can never definitively distinct between MAR or MNAR, because we in practice we never know *the missing data itself*. 
+
+
+### Statistical tests
+
+The essence of testing for MCAR is to compare the group with missing data to the group without missing data. We can use simple statistics tests to do this. 
+
+**Univariate testing**
+* Independent samples t-test to compare for contiuous measures
+* Chi-square test to compare for categorical measures
+
+**Multivariate testing**
+* Logistic regression to evaluate multivariately
+
+### T-test to evaluate MCAR
+
+To compare the continuous variables for the group with missing data to the group without missing data, we can use a T-test to compare the means between the groups. 
+
+*MCAR example*
+```{R}
+t.test(X2 ~ R1, data = mcar)
+
+```
+
+*MAR example*
+```{R}
+t.test(X2 ~ R1, data = mar)
+
+```
+
+Usually, you do this for all variables in the data that you suspect can be related to the probability of missing data. When there are no significant differences we may assume the data are MCAR. Otherwise, we assume not-MCAR (i.e. MAR or MNAR).
+
+### Chi-square test to evaluate MCAR
+
+To compare the categorical variables for the group wiht missing data to the grop without missing data, we can use a Chi-square test to compare the distribution over the categories between the groups. 
+
+*MCAR example*
+```{R}
+mcar <- mcar %>% mutate(X3c = ifelse(X3 > 0, 1, 0))
+chisq.test(mcar$R1, mcar$X3c)
+
+```
+
+*MAR example*
+```{R}
+mar <- mar %>% mutate(X3c = ifelse(X3 > 0, 1, 0))
+chisq.test(mar$R1, mar$X3c)
+
+```
+
+
+### Logistic regression to evaluate MCAR
+
+
+
+### Little's MCAR test
+
+The data can be separated into two groups, one group with participants with complete data on variable A (e.g., IQ) and one group with participants with missing data on variable A (e.g., IQ). We can create a dichotomous variable (i.e, missing data indicator) that indicates whether data on IQ are missing or complete. Then we can test for group differences with a t-test. For example we can test whether both groups differ in age. If there are differences we can conclude that our missing data are NOT complete at random, so not MCAR. We can also use the missing data indicator variable as outcome in a logistic regression model and test whether other variables in the data are related to that outcome. If we find variables related to the missing data indicator we can conclude that data are not MCAR. If we find no relations at all, we might be able to conclude that missing data are MCAR. However, we can never distinguish between MAR or MNAR. We can only test if data are MCAR or not MCAR. Furthermore, it is always important to combine statistical testing with common sense.

@@ -72,7 +72,6 @@ datm %>%
   summarise(n = n(),
             p = n/ 25)
 
-
 ```
 
 The `cci` function in the `mice` package creates and indicator for the number of fully observed rows. 
