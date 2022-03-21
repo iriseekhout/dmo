@@ -168,7 +168,7 @@ pre code {
 
 <h1 class="title toc-ignore">Missing data mechanisms</h1>
 <h4 class="author">Iris Eekhout</h4>
-<h4 class="date">5-3-2022</h4>
+<h4 class="date">21-3-2022</h4>
 
 </div>
 
@@ -1321,10 +1321,257 @@ X3
 <p>The difference between the group with missing values (TRUE) and the group without missing values (FALSE) shows that having missing data is related to the scores on the other variables.</p>
 <p><img src="data:image/png;base64,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Ag2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2UkWWj5GKBVkLJxQINlJFlo+RigVZCycUCDZSRZaPkYoFWQsnFAg2U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" width="672" /></p>
 </div>
+<div id="evaluate-the-missing-data-mechanism" class="section level2">
+<h2>Evaluate the missing data mechanism</h2>
+<p>Any information about the research process can provide valuable information that helps to evaluate and make assumptions about the missing data mechanism. By what is known about the data collection process and the data in general, most researchers have an idea about the reasons for the missing data. It is very important to take this knowledge into account when making an assumption about the missing data mechanism.</p>
+<div id="missing-data-mechanisms" class="section level3">
+<h3>Missing data mechanisms</h3>
+<ul>
+<li><strong>Missing completely at random:</strong> missing data is a completely random subsample of the observed data.</li>
+<li><strong>Missing at random:</strong> probability of missing data is related to other measured variables.</li>
+<li><strong>Missing not at random:</strong> probability of missing data is related to the missing data itself, and other measured variables.</li>
+</ul>
+</div>
+<div id="testing-the-mechanisms" class="section level3">
+<h3>Testing the mechanisms</h3>
+<p>The missing data mechanisms are defined by the probability that missing data occur. When this probability is totally not related to other measured variables, we can assume that the remaining sample is a totally random subsample (MCAR).</p>
+<p>When <em>other measured variables</em> are related tot the probability of missing data, we can assume that the data are not MCAR. However, we can never definitively rule out MNAR, because we in practice we never know <em>the missing data itself</em>.</p>
+</div>
+<div id="statistical-tests" class="section level3">
+<h3>Statistical tests</h3>
+<p>The essence of testing for MCAR is to compare the group with missing data to the group without missing data. We can use simple statistics tests to do this.</p>
+<p><strong>Univariate testing</strong></p>
+<ul>
+<li>Independent samples t-test to compare for continuous measures</li>
+<li>Chi-square test to compare for categorical measures</li>
+</ul>
+<p><strong>Multivariate testing</strong></p>
+<ul>
+<li>Logistic regression to evaluate multivariately</li>
+<li>Little’s MCAR test</li>
+</ul>
+</div>
+<div id="t-test-to-evaluate-mcar" class="section level3">
+<h3>T-test to evaluate MCAR</h3>
+<p>To compare the continuous variables for the group with missing data to the group without missing data, we can use a T-test to compare the means between the groups.</p>
+<p><em>MCAR example</em></p>
+<pre class="r"><code>t.test(X2 ~ R1, data = mcar)</code></pre>
+<pre><code>## 
+##  Welch Two Sample t-test
+## 
+## data:  X2 by R1
+## t = -0.11866, df = 996.42, p-value = 0.9056
+## alternative hypothesis: true difference in means between group FALSE and group TRUE is not equal to 0
+## 95 percent confidence interval:
+##  -0.2970947  0.2632135
+## sample estimates:
+## mean in group FALSE  mean in group TRUE 
+##          0.07756972          0.09451031</code></pre>
+<p><em>MAR example</em></p>
+<pre class="r"><code>t.test(X2 ~ R1, data = mar)</code></pre>
+<pre><code>## 
+##  Welch Two Sample t-test
+## 
+## data:  X2 by R1
+## t = -13.814, df = 994.06, p-value &lt; 2.2e-16
+## alternative hypothesis: true difference in means between group FALSE and group TRUE is not equal to 0
+## 95 percent confidence interval:
+##  -2.064496 -1.550917
+## sample estimates:
+## mean in group FALSE  mean in group TRUE 
+##          -0.7959512           1.0117550</code></pre>
+<p><em>MNAR example</em></p>
+<pre class="r"><code>t.test(X2 ~ R1, data = mnar)</code></pre>
+<pre><code>## 
+##  Welch Two Sample t-test
+## 
+## data:  X2 by R1
+## t = -3.9996, df = 973.87, p-value = 6.824e-05
+## alternative hypothesis: true difference in means between group FALSE and group TRUE is not equal to 0
+## 95 percent confidence interval:
+##  -0.8467042 -0.2893187
+## sample estimates:
+## mean in group FALSE  mean in group TRUE 
+##          -0.2046124           0.3633990</code></pre>
+<p>Usually, you do this for all variables in the data that you suspect can be related to the probability of missing data. When there are no significant differences we may assume the data are MCAR. Otherwise, we assume not-MCAR (i.e. MAR or MNAR). <em>Note that we can never truly rule out MNAR.</em></p>
+</div>
+<div id="chi-square-test-to-evaluate-mcar" class="section level3">
+<h3>Chi-square test to evaluate MCAR</h3>
+<p>To compare the categorical variables for the group with missing data to the group without missing data, we can use a Chi-square test to compare the distribution over the categories between the groups.</p>
+<p><em>MCAR example</em></p>
+<pre class="r"><code>mcar &lt;- mcar %&gt;% mutate(X3c = ifelse(X3 &gt; 0, 1, 0))
+chisq.test(mcar$R1, mcar$X3c)</code></pre>
+<pre><code>## 
+##  Pearson&#39;s Chi-squared test with Yates&#39; continuity correction
+## 
+## data:  mcar$R1 and mcar$X3c
+## X-squared = 0.062121, df = 1, p-value = 0.8032</code></pre>
+<p><em>MAR example</em></p>
+<pre class="r"><code>mar &lt;- mar %&gt;% mutate(X3c = ifelse(X3 &gt; 0, 1, 0))
+chisq.test(mar$R1, mar$X3c)</code></pre>
+<pre><code>## 
+##  Pearson&#39;s Chi-squared test with Yates&#39; continuity correction
+## 
+## data:  mar$R1 and mar$X3c
+## X-squared = 80.787, df = 1, p-value &lt; 2.2e-16</code></pre>
+<p><em>MNAR example</em></p>
+<pre class="r"><code>mnar &lt;- mar %&gt;% mutate(X3c = ifelse(X3 &gt; 0, 1, 0))
+chisq.test(mar$R1, mnar$X3c)</code></pre>
+<pre><code>## 
+##  Pearson&#39;s Chi-squared test with Yates&#39; continuity correction
+## 
+## data:  mar$R1 and mnar$X3c
+## X-squared = 80.787, df = 1, p-value &lt; 2.2e-16</code></pre>
+</div>
+<div id="logistic-regression-to-evaluate-mcar" class="section level3">
+<h3>Logistic regression to evaluate MCAR</h3>
+<p>The probability of missing data can also be investigated in a logistic regression analysis. The missing data indicator is the dependent variable and the other variables that may be related to the probability of missing data are added as the independent variables. Note that when the other variables have missing values as well, a complete-case analysis is used per default.</p>
+<p>The results of the logistic regression analysis show if the independent variables relate to the probability of missing data.</p>
+<p><em>MCAR example</em></p>
+<pre class="r"><code>glm(R1 ~ X2 + X3, data = mcar) %&gt;%
+  summary</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = R1 ~ X2 + X3, data = mcar)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -0.5489  -0.5094   0.4612   0.4901   0.5299  
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  0.509626   0.015841  32.171   &lt;2e-16 ***
+## X2           0.001980   0.007142   0.277    0.782    
+## X3          -0.006219   0.007148  -0.870    0.384    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 0.2504582)
+## 
+##     Null deviance: 249.90  on 999  degrees of freedom
+## Residual deviance: 249.71  on 997  degrees of freedom
+## AIC: 1458.4
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+<p><em>MAR example</em></p>
+<pre class="r"><code>glm(R1 ~ X2 + X3, data = mar) %&gt;%
+  summary</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = R1 ~ X2 + X3, data = mar)
+## 
+## Deviance Residuals: 
+##      Min        1Q    Median        3Q       Max  
+## -1.17785  -0.37994  -0.01758   0.39236   1.20987  
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 0.483065   0.013972  34.573   &lt;2e-16 ***
+## X2          0.078489   0.006299  12.460   &lt;2e-16 ***
+## X3          0.056167   0.006304   8.909   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 0.1948431)
+## 
+##     Null deviance: 249.86  on 999  degrees of freedom
+## Residual deviance: 194.26  on 997  degrees of freedom
+## AIC: 1207.3
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+<p><em>MNAR example</em></p>
+<pre class="r"><code>glm(R1 ~ X2 + X3, data = mnar) %&gt;%
+  summary</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = R1 ~ X2 + X3, data = mnar)
+## 
+## Deviance Residuals: 
+##      Min        1Q    Median        3Q       Max  
+## -1.17785  -0.37994  -0.01758   0.39236   1.20987  
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 0.483065   0.013972  34.573   &lt;2e-16 ***
+## X2          0.078489   0.006299  12.460   &lt;2e-16 ***
+## X3          0.056167   0.006304   8.909   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 0.1948431)
+## 
+##     Null deviance: 249.86  on 999  degrees of freedom
+## Residual deviance: 194.26  on 997  degrees of freedom
+## AIC: 1207.3
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+<p>In the MCAR example we see that both <code>X2</code> and <code>X3</code> are not related to the probability of missing data in <code>X1</code>, so we may assume that the missing data in <code>X1</code> are MCAR. However, in the MAR example, both variables are related tot he probability of missing data in <code>X1</code>, so in that case we can assume that the data are not-MCAR. We cannot rule-out MNAR in this situation, since cannot test the missing values itself.</p>
+</div>
+<div id="littles-mcar-test" class="section level3">
+<h3>Little’s MCAR test</h3>
+<p>Another test that is especially developed by Todd Little, to investigate the MCAR missing data mechanism is Little’s MCAR test. This is a multivariate test, that evaluates the subgroups of the data that share the same missing data pattern. For these subgroups the observed means are compared to the estimated means based on the expectation-maximization algorithm. A chi-square distribution test is used to test the null hypothesis that the data are MCAR. A significant result shows that the data are not-MCAR.</p>
+<p><em>MCAR example</em></p>
+<pre class="r"><code>misty::na.test(mcar %&gt;% select(X1:X3))</code></pre>
+<pre><code>##  Little&#39;s MCAR Test
+## 
+##      n nIncomp nPattern chi2 df  pval 
+##   1000     510        2 0.77  2 0.679</code></pre>
+<p><em>MAR example</em></p>
+<pre class="r"><code>misty::na.test(mar %&gt;% select(X1:X3))</code></pre>
+<pre><code>##  Little&#39;s MCAR Test
+## 
+##      n nIncomp nPattern   chi2 df  pval 
+##   1000     488        2 222.52  2 0.000</code></pre>
+<p><em>MNAR example</em></p>
+<pre class="r"><code>misty::na.test(mnar %&gt;% select(X1:X3))</code></pre>
+<pre><code>##  Little&#39;s MCAR Test
+## 
+##      n nIncomp nPattern   chi2 df  pval 
+##   1000     488        2 222.52  2 0.000</code></pre>
+<p>Using Little’s MCAR test does not provide specific information about which variables are related to the probability of missing data. Also, the test assumes multivariate normality and can only be applied to continuous variables. And the MNAR mechanism can never be ruled out, regardless of the result of the test.</p>
+<!--- 
+Little (1988) proposed a multivariate test of Missing Completely at Random (MCAR) that tests for mean differences on every variable in the data set across subgroups that share the same missing data pattern by comparing the observed variable means for each pattern of missing data with the expected population means estimated using the expectation-maximization (EM) algorithm (i.e., EM maximum likelihood estimates). The test statistic is the sum of the squared standardized differences between the subsample means and the expected population means weighted by the estimated variance-covariance matrix and the number of observations within each subgroup (Enders, 2010). Under the null hypothesis that data are MCAR, the test statistic follows asymptotically a chi-square distribution with ∑ k_j - k degrees of freedom, where k_j is the number of complete variables for missing data pattern j, and k is the total number of variables. A statistically significant result provides evidence against MCAR.
+
+Note that Little's MCAR test has a number of problems (see Enders, 2010). First, the test does not identify the specific variables that violates MCAR, i.e., the test does not identify potential correlates of missingness (i.e., auxiliary variables). Second, the test is based on multivariate normality, i.e., under departure from the normality assumption the test might be unreliable unless the sample size is large and is not suitable for categorical variables. Third, the test investigates mean differences assuming that the missing data pattern share a common covariance matrix, i.e., the test cannot detect covariance-based deviations from MCAR stemming from a Missing at Random (MAR) or Missing Not at Random (MNAR) mechanism because MAR and MNAR mechanisms can also produce missing data subgroups with equal means. Fourth, simulation studies suggest that Little's MCAR test suffers from low statistical power, particularly when the number of variables that violate MCAR is small, the relationship between the data and missingness is weak, or the data are MNAR (Thoemmes & Enders, 2007). Fifth, the test can only reject, but cannot prove the MCAR assumption, i.e., a statistically not significant result and failing to reject the null hypothesis of the MCAR test does not prove the null hypothesis that the data is MCAR. Finally, under the null hypothesis the data are actually MCAR or MNAR, while a statistically significant result indicates that missing data are MAR or MNAR, i.e., MNAR cannot be ruled out regardless of the result of the test.
+--->
+<!----
+
+Example is not working!
+### Jamshidian and Jalal's Non-Parametric MCAR Test
+
+Jamshidian and Jalal's non-parametric MCAR test, solves some of the issues with Little's MCAR test. This test assumes that the missing data are either MCAR or MAR, and tests whether the missingness is independent of the observed values. If so, the covariance matrices of the imputed data will be equal across groups with different patterns of missingness. However, this test can only indicate whether missingness is MCAR or MAR. The procedure cannot distinguish MCAR from MNAR, so a non-significant result does not rule out MNAR.
+
+This method does not work with just one missing data pattern (as our example data). Se we create a new example with two patterns.
+*MCAR example*
+
+
+This test consists of the following procedure:
+
+Data are imputed.
+
+The imputed data are split into k groups according to the k missing data patterns in the original data (see md.pattern()).
+
+Perform Hawkins' test for equality of covariances across the k groups.
+
+If the test is not significant, conclude that there is no evidence against multivariate normality of the data, nor against MCAR.
+
+If the test is significant, and multivariate normality of the data can be assumed, then it can be concluded that missingness is MAR.
+
+If multivariate normality cannot be assumed, then perform the Anderson-Darling non-parametric test for equality of covariances across the k groups.
+
+If the Anderson-Darling test is not significant, this is evidence against multivariate normality - but no evidence against MCAR.
+
+If the Anderson-Darling test is significant, this is evidence it can be concluded that missingness is MAR.
+
+
+-->
+</div>
+</div>
 <div id="assuming-the-missing-data-mechanism" class="section level2">
 <h2>Assuming the missing data mechanism</h2>
-<p>There are two main ways to make an assumption about the missing data mechanism. The first and most important one is ‘common sense’. By what is known about the data collection process and the data in general, most researchers have an idea about the reasons for the missing data. It is very important to take this knowledge into account when making an assumption about the missing data mechanism.</p>
-<p>A second way to make an assumption about the missing data mechanism is by statistical testing. The data can be separated into two groups, one group with participants with complete data on variable A (e.g., IQ) and one group with participants with missing data on variable A (e.g., IQ). We can create a dichotomous variable (i.e, missing data indicator) that indicates whether data on IQ are missing or complete. Then we can test for group differences with a t-test. For example we can test whether both groups differ in age. If there are differences we can conclude that our missing data are NOT complete at random, so not MCAR. We can also use the missing data indicator variable as outcome in a logistic regression model and test whether other variables in the data are related to that outcome. If we find variables related to the missing data indicator we can conclude that data are not MCAR. If we find no relations at all, we might be able to conclude that missing data are MCAR. However, we can never distinguish between MAR or MNAR. We can only test if data are MCAR or not MCAR. Furthermore, it is always important to combine statistical testing with common sense.</p>
+<p>The methods to deal with missing data, implicitly assume a missing data mechanism. The most strict assumption is the MCAR assumption. In practice it is also easiest to deal with MCAR data. Since the data are missing completely at random, we can either just analyze the observed sample only (this will result in unbiased estimates), or use a random imputation method to boost the power the the amount of missing data is too large. In the latter situation, it may be best to use multiple imputation or stochastic regression imputation to retain the covariance structure of the data.</p>
+<p>The less strict assumption is the MAR missing data mechanism. Most of the more advanced missing data methods assume this mechanism (e.g. multiple imputation). It is important to make the assumption of the missing data mechanism as plausible as possible. One strategy is to take this into account in the study design. When variables are included that may later explain the missing data, a MAR assumption may become more plausible (as compared to MNAR). These additional variable may also help in dealing with the missing data, because they can be used as auxiliary variables. Auxiliary variables are variables related to the probability of missing data or to the variable with missing data. These variables can be used as predictors in an imputation model or as covariate in a FIML model to improve estimations.</p>
+<p>The least strict assumption is the MNAR missing data mechanism. MNAR data are also referred to as non-ignorable, because these cannot be ignored without causing bias in results. MNAR data are more challenging to deal with.</p>
 </div>
 
 
