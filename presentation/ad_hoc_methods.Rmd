@@ -1,0 +1,94 @@
+---
+title: "Ad hoc methods"
+author: "Dr. Iris Eekhout"
+subtitle: "Workshop name"
+author: "Dr. Iris Eekhout"
+date: "`r format(Sys.Date())`"
+output: 
+  ioslides_presentation:
+    logo: websitelogo.jpg
+widescreen: true
+always_allow_html: yes
+---
+
+## Assuming the missing data mechanism {.smaller .build}
+
+Methods to deal with missing data, implicitly assume a missing data mechanism. 
+
+MCAR: the most strict assumption. In practice it is also easiest to deal with MCAR data. 
+1. analyze the observed sample only (this will result in unbiased estimates)
+2. use a random imputation method to boost the power the the amount of missing data is too large. (Best to use multiple imputation or stochastic regression imputation to retain the covariance structure of the data). 
+
+MAR: less strict assumption. Most advanced missing data methods assume this mechanism (e.g. multiple imputation, FIML). 
+Include variables in study that may explain the missing data, a MAR assumption may become more plausible (as compared to MNAR). 
+
+These auxiliary variables may also help in dealing with the missing data. Auxiliary variables are variables related to the probability of missing data or to the variable with missing data. These variables can be used as predictors in an imputation model or as covariates in a FIML model to improve estimations.
+
+MNAR: least strict assumption. MNAR data are also referred to as non-ignorable, because these cannot be ignored without causing bias in results. MNAR data are more challenging to deal with. 
+
+
+## Complete-case analysis
+
+**Complete-case analysis (CCA)**: where only the cases with observed data for all variables involved are used in the analysis. 
+
+* The most common and easy way to deal with missing data. 
+* The default methods for many data analysis procedure. 
+* Assumes MCAR
+
+## CCA | linear regression when MCAR
+
+## CCA | linear regression when MAR
+
+
+
+## Imputation {.build}
+
+**Imputation:** relpacing the missing with a value. 
+
+*Possible values to impute?*
+
+* Mean
+* Regression estimate
+* Random value
+* Previous observation (longitudinal study)
+* Informed guess / estimate
+* ...
+
+## Assumption of *single* imputation
+
+* **Most important:** assumes that the imputed value is an actual observed value.
+* Some assume MCAR (i.e. regression imputation, random value imputation)
+
+Other examples:
+
+* All missing values are average (i.e. mean imputation)
+* People with missing data remain stable (i.e. LOCF)
+
+## Mean imputation 
+
+## Mean imputaton | in one variable
+
+## Mean imputation | one variable related to another
+
+## Regression imputation
+
+Conditional mean imputation
+
+
+## Regression imputation | in one variable
+
+## Regression imputation | one variable related to another
+
+
+## Last observation carried forward
+
+## LOCF | example
+
+## LOCF | example weight loss
+
+
+## Regression imputation + residual error
+
+<!--
+https://statisticsglobe.com/regression-imputation-stochastic-vs-deterministic/
+-->
