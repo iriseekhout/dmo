@@ -1,8 +1,11 @@
 ---
 title: "Missing data mechanisms"
+subtitle: "Workshop name"
 author: "Dr. Iris Eekhout"
 date: "`r format(Sys.Date())`"
-output: ioslides_presentation
+output: 
+  ioslides_presentation:
+    logo: websitelogo.jpg
 widescreen: true
 always_allow_html: yes
 ---
@@ -26,7 +29,8 @@ x <- mvrnorm(n=1000,mu=c(0,0,0), Sigma=matrix(c(5,1,1,1,5,1,1,1,5),3,3)) %>%
 theme_set(theme_light())
 ```
 
-## Types of missing data
+
+## Types of missing data {.build}
 
 In research, missing data occur when a data value is unavailable. Many empirical studies encounter missing data. Missing data can occur in many stages of research due to many different causes in many different forms. 
 
@@ -40,6 +44,7 @@ Each type of missing data may have different reasons, and also different implica
 ## Missing data mechanisms
 
 The underlying cause of missing data and were first described by Rubin (1976). 
+
 Rubin distinguished three missing data mechanisms:
 
 * **missing completely at random (MCAR)**
@@ -227,9 +232,9 @@ ggplot(data = mnarbox, aes(x = R1, y = value)) +
 The difference between the group with missing values (TRUE) and the group without missing values (FALSE) shows that having missing data is related to the scores on the other variables. 
 
 
+# Evaluate the missing data mechanism
 
-
-## Evaluate the missing data mechanism
+## Reason for missing data
 
 Any information about the research process can provide valuable information that helps to evaluate and make assumptions about the missing data mechanism. 
 
@@ -242,14 +247,20 @@ Why are data missing?
 * **Missing at random:** probability of missing data is related to other measured variables.
 * **Missing not at random:** probability of missing data is related to the missing data itself, and other measured variables.
 
-## Testing the mechanisms
+## Testing the mechanisms {.build}
 
-The missing data mechanisms are defined by the probability that missing data occur. When this probability is totally not related to other measured variables, we can assume that the remaining sample is a totally random subsample (MCAR). 
+The missing data mechanisms are defined by the probability that missing data occur. 
 
-When *other measured variables* are related tot the probability of missing data, we can assume that the data are not MCAR. However, we can never definitively rule out MNAR, because we in practice we never know *the missing data itself*. 
+Probability is not related to other measured variables 
+
+* Assume the remaining sample is a totally random subsample (MCAR). 
+
+*Other measured variables* are related tot the probability of missing data
+ 
+ * Assume the data are not MCAR. However, we cannot definitively rule out MNAR, because we in practice we never know *the missing data itself*. 
 
 
-## Statistical tests
+## Statistical tests {.build}
 
 The essence of testing for MCAR is to compare the group with missing data to the group without missing data. 
 
@@ -265,7 +276,7 @@ The essence of testing for MCAR is to compare the group with missing data to the
 
 ## T-test to evaluate MCAR
 
-To compare the continuous variables for the group with missing data to the group without missing data, we can use a T-test to compare the means between the groups. 
+Independent samples T-test to compare the mean of *continuous* variables between the group with missing data to the group without missing data. 
 
 Note that the T-test assumes normally distributed data and homogeneity of variance.
 
@@ -296,12 +307,18 @@ t.test(X2 ~ R1, data = mnar)
 
 ## T-test
 
-Usually, you do this for all variables in the data that you suspect can be related to the probability of missing data. When there are no significant differences we may assume the data are MCAR. Otherwise, we assume not-MCAR (i.e. MAR or MNAR). *Note that we can never truly rule out MNAR.*
+Univariate method.
+
+When there are no significant differences we may assume the data are MCAR. Otherwise, we assume not-MCAR (i.e. MAR or MNAR). 
+
+*Note that we can never truly rule out MNAR.*
 
 
 ## Chi-square test to evaluate MCAR
 
-To compare the categorical variables for the group with missing data to the group without missing data, we can use a Chi-square test to compare the distribution over the categories between the groups. 
+Chi-square test to compare the *categorical* variables for the group with missing data to the group without missing data.
+
+Test to compare the distribution over the categories between the groups. 
 
 Note that the Chi-square test assumes that the expected cell frequencies should not be too small.
 
@@ -337,9 +354,13 @@ chisq.test(mar$R1, mnar$X3c)
 
 ## Logistic regression to evaluate MCAR
 
-The probability of missing data can also be investigated in a logistic regression analysis. The missing data indicator is the dependent variable and the other variables that may be related to the probability of missing data are added as the independent variables. The results of the logistic regression analysis show if the independent variables relate to the probability of missing data.
+The probability of missing data can also be investigated in a logistic regression analysis.
 
-Note that when the other variables have missing values as well, a complete-case analysis is used per default. 
+The missing data indicator is the dependent variable and the other variables that may be related to the probability of missing data are the independent variables. 
+
+The results of the logistic regression analysis show if the independent variables relate to the probability of missing data.
+
+*Note that when the other variables have missing values as well, a complete-case analysis is used per default.* 
 
 
 ## Logistic regression MCAR
@@ -452,19 +473,28 @@ If the Anderson-Darling test is significant, this is evidence it can be conclude
 
 -->
 
-## Assuming the missing data mechanism {.smaller}
+## Assuming the missing data mechanism (MCAR) {.build}
 
 The methods to deal with missing data, implicitly assume a missing data mechanism. 
 
-MCAR: the most strict assumption. In practice it is also easiest to deal with MCAR data. 
-1. analyze the observed sample only (this will result in unbiased estimates)
-2. use a random imputation method to boost the power the the amount of missing data is too large. (Best to use multiple imputation or stochastic regression imputation to retain the covariance structure of the data). 
+**MCAR**: the most strict assumption. In practice it is also easiest to deal with MCAR data. 
 
-MAR: less strict assumption. Most advanced missing data methods assume this mechanism (e.g. multiple imputation, FIML). 
-Include variables in study that may explain the missing data, a MAR assumption may become more plausible (as compared to MNAR). 
+1. Analyze the observed sample only (this will result in unbiased estimates).
+2. Use an imputation method to boost the power the the amount of missing data is too large. 
 
-These auxiliary variables may also help in dealing with the missing data. Auxiliary variables are variables related to the probability of missing data or to the variable with missing data. These variables can be used as predictors in an imputation model or as covariates in a FIML model to improve estimations.
 
-MNAR: least strict assumption. MNAR data are also referred to as non-ignorable, because these cannot be ignored without causing bias in results. MNAR data are more challenging to deal with. 
+## Assuming the missing data mechanism (MAR) {.build}
+
+**MAR**: less strict assumption. Most advanced missing data methods assume this mechanism (e.g. multiple imputation, FIML). 
+
+* Include variables in study that may explain the missing data, a MAR assumption may become more plausible (as compared to MNAR). 
+* These auxiliary variables may also help in dealing with the missing data. Auxiliary variables are variables related to the probability of missing data or to the variable with missing data. These variables can be used as predictors in an imputation model or as covariates in a FIML model to improve estimations.
+
+
+## Assuming the missing data mechanism (MNAR) {.build}
+
+**MNAR**: least strict assumption. 
+
+* MNAR data are also referred to as non-ignorable, because these cannot be ignored without causing bias in results. MNAR data are more challenging to deal with. 
 
 
