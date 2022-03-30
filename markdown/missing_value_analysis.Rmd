@@ -131,7 +131,7 @@ The proportion missing-response from the sum of the missing-response and missing
 round(100 * pat$mr / (pat$mr + pat$mm))
 
 ```
-
+<!--- influx outflux https://stefvanbuuren.name/fimd/missing-data-pattern.html --->
 
 ## Types of missing data
 
