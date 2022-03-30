@@ -1,0 +1,267 @@
+---
+title: "Multiple Imputation"
+author: "Dr. Iris Eekhout"
+subtitle: "Workshop name"
+date: "`r format(Sys.Date())`"
+output: 
+  ioslides_presentation:
+    logo: websitelogo.jpg
+widescreen: true
+always_allow_html: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+library(ggplot2)
+library(mice)
+library(knitr)
+library(kableExtra)
+library(dplyr)
+theme_set(theme_light())
+```
+
+## Multiple imputation method
+
+* Imputing the missing data entries with multiple "plausible" values.
+* Takes imputation uncertainty into account
+
+## Multiple Imputation process
+
+1. Imputation phase
+2. Analysis phase
+3. Pooling phase
+
+> incomplete data
+> generate multiple copies of the same dataset, but each time differenty imputed values
+> analyze each imputed dataset
+> pool results for analyses to final study result
+
+## Imputation phase
+
+* Imputing the missing data entries with a "plausible" value
+* MICE: multiple imputation by *chained* equations
+
+
+## Estimate imputed values
+
+* Regression imputation `norm.predict`
+* Stochastic regression imputation (regression + residual error) `norm.nob`
+* Stochastic regression with parameter uncertainty `norm`
+* Predictive mean matching `pmm`
+
+
+## Example data 
+
+```{r}
+psych::describe(airquality) %>%
+  kable() %>%
+  kable_styling()
+```
+
+## Regression imputation | Algorithm
+
+* Imputed value: $Y_{imp} = \hat{\beta}_0 + X_{mis}\hat{\beta}_1 + \epsilon$
+* Parameters $\hat{\beta}_0$ and $\hat{\beta}_1$ are estimated from the observed data.
+
+
+## Regression imputation | Concept
+
+```{r echo=FALSE}
+dat <- data.frame(MASS::mvrnorm(n = 50, mu = c(0,0), Sigma = matrix(c(1, 0.75,  0.75, 1),2,2)))
+dat[10,"X2"] <- NA
+
+imp_reg1 <- mice(dat, method = "norm.predict", printFlag = FALSE)
+#xyplot(imp_reg1, X2 ~ X1)
+
+impr_long <- complete(imp_reg1, action = "long", include = FALSE) %>% 
+  mutate(R = ifelse(.id == 10, 0, 1))
+
+ggplot(impr_long, aes(X1, X2, color = factor(R), group = factor(R)))+
+  geom_smooth(method = "lm", se = FALSE)+
+  geom_point(size = 2)+
+  theme(legend.position = "none")
+
+``` 
+
+## Regression imputation | Univariate imputation
+
+```{r}
+imp_reg <- mice(airquality %>% select(Ozone, Solar.R), method = "norm.predict", printFlag = FALSE)
+xyplot(imp_reg, Ozone ~ Solar.R)
+```
+
+## Regression imputation | Multivariate imputation
+
+```{r}
+imp_reg <- mice(airquality, method = "norm.predict", printFlag = FALSE)
+xyplot(imp_reg, Ozone ~ Solar.R)
+```
+
+## Stochastic regression imputation | Algorithm
+
+* Imputed value: $Y_{imp} = \hat{\beta}_0 + X_{mis}\hat{\beta}_1 + \epsilon$
+* Parameters $\hat{\beta}_0$ and $\hat{\beta}_1$ are estimated from the observed data.
+* $\epsilon$ is normally distributed residual error
+
+## Stochastic regression imputation | Concept
+
+```{r echo=FALSE}
+
+imp_sreg1 <- mice(dat, method = "norm.nob", printFlag = FALSE)
+#xyplot(imp_sreg1, X2 ~ X1)
+
+impsr_long <- complete(imp_sreg1, action = "long", include = FALSE) %>% 
+  mutate(R = ifelse(.id == 10, 0, 1))
+
+ggplot(impsr_long, aes(X1, X2, color = factor(R), group = factor(R)))+
+  geom_smooth(method = "lm", se = FALSE)+
+  geom_point(size = 2)+
+  theme(legend.position = "none")
+
+``` 
+
+
+## Stochastic regression imputation | Univariate
+
+```{r}
+imp_reg <- mice(airquality %>% select(Ozone, Solar.R), method = "norm.nob", printFlag = FALSE)
+xyplot(imp_reg, Ozone ~ Solar.R)
+```
+
+## Stochastic regression imputation | Multivariate
+
+```{r}
+imp_reg <- mice(airquality, method = "norm.nob", printFlag = FALSE)
+xyplot(imp_reg, Ozone ~ Solar.R)
+```
+
+
+## Bayesian regression imputation | Algorithm
+
+* Imputed value: $Y_{imp} = \dot{\beta}_0 + X_{mis}\dot{\beta}_1 + \epsilon$
+* Parameters $\dot{\beta}_0$ and $\dot{\beta}_1$ are drawn from their posterior distribution.
+* $\epsilon$ is normally distributed residual error
+
+## Bayesian regression imputation | Concept
+
+```{r echo=FALSE}
+
+imp_breg1 <- mice(dat, method = "norm", printFlag = FALSE)
+#xyplot(imp_sreg1, X2 ~ X1)
+
+impbr_long <- complete(imp_breg1, action = "long", include = FALSE) %>% 
+  mutate(R = ifelse(.id == 10, 0, 1))
+
+#lm(X2 ~ X1, dat)
+
+ggplot(impbr_long, aes(X1, X2, color = factor(R), group = factor(R)))+
+  geom_smooth(method = "lm", se = FALSE, color = "#00BFC4", size = 1)+
+  geom_abline(intercept = 0.015, slope = 0.83, color = "#F8766D", size = 1)+
+  geom_abline(intercept = 0.08, slope = 0.81, color = "#F8766D", size = 1)+
+  geom_abline(intercept = 0.12, slope = 0.8, color = "#F8766D", size = 1)+
+  geom_abline(intercept = 0.2, slope = 0.85, color = "#F8766D", size = 1)+
+  geom_abline(intercept = 0.1, slope = 0.7, color = "#F8766D", size = 1)+
+geom_point(size = 2)+
+  theme(legend.position = "none")
+#blue = #00BFC4
+# red = 
+``` 
+
+
+## Bayesian regression imputation | Univariate
+
+```{r}
+imp_breg <- mice(airquality %>% select(Ozone, Solar.R), method = "norm", printFlag = FALSE)
+xyplot(imp_breg, Ozone ~ Solar.R)
+```
+
+## Bayesian regression imputation | Multivariate
+
+```{r}
+imp_breg <- mice(airquality, method = "norm", printFlag = FALSE)
+xyplot(imp_breg, Ozone ~ Solar.R)
+```
+
+## Predictive mean matching | Algorithm
+
+* Estimate the predicted value using Bayesian regression imputation
+  + $Y_{imp} = \dot{\beta}_0 + X_{mis}\dot{\beta}_1 + \epsilon$
+  + Parameters $\dot{\beta}_0$ and $\dot{\beta}_1$ are drawn from their posterior distribution.
+  + $\epsilon$ is normally distributed residual error
+* Select $k$ nearest neighbors to this predicted value from the observed data
+* Randomly draw one donor to use as imputed value
+
+## Predictive mean matching | concept
+
+
+```{r echo=FALSE}
+
+imp_preg1 <- mice(dat, method = "pmm", printFlag = FALSE)
+#xyplot(imp_sreg1, X2 ~ X1)
+
+imppr_long <- complete(imp_preg1, action = "long", include = FALSE) %>% 
+  mutate(R = ifelse(.id == 10, 0, 1))
+
+#lm(X2 ~ X1, dat)
+
+ggplot(imppr_long, aes(X1, X2))+
+geom_smooth(method = "lm", se = FALSE, color = "#00BFC4",  size = 1)+
+geom_point(size = 2, color = "#00BFC4")+
+  theme(legend.position = "none") + 
+  ggtitle("Observed data")
+#blue = #00BFC4
+# red = 
+``` 
+
+
+## Predictive mean matching | concept
+
+
+```{r echo=FALSE}
+
+imp_preg1 <- mice(dat, method = "pmm", printFlag = FALSE)
+#xyplot(imp_sreg1, X2 ~ X1)
+
+imppr_long <- complete(imp_preg1, action = "long", include = FALSE) %>% 
+  mutate(R = ifelse(.id == 10, 0, 1))
+
+#lm(X2 ~ X1, dat)
+
+ggplot(imppr_long, aes(X1, X2, color = factor(R), group = factor(R)))+
+geom_smooth(method = "lm", se = FALSE)+
+geom_point(size = 2)+
+  theme(legend.position = "none")+ 
+  ggtitle("Imputed missing values")
+#blue = #00BFC4
+# red = 
+``` 
+
+
+## Predictive mean matching | Univariate
+
+```{r}
+imp_pmm <- mice(airquality %>% select(Ozone, Solar.R), method = "pmm", printFlag = FALSE)
+xyplot(imp_pmm, Ozone ~ Solar.R)
+```
+
+## Predictive mean matching | Multivariate
+
+```{r}
+imp_pmm <- mice(airquality, method = "pmm", printFlag = FALSE)
+xyplot(imp_pmm, Ozone ~ Solar.R)
+```
+
+
+## Chained equations
+
+
+## Iterations
+
+
+## Number of imputations
+
+
+## Analysis phase
+
+## Pooling phase
