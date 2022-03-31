@@ -5,7 +5,9 @@ subtitle: "Workshop name"
 date: "`r format(Sys.Date())`"
 output: 
   ioslides_presentation:
-    logo: websitelogo.jpg
+    logo: Puzzle_zgnb3.jpg
+    theme: readable
+    css: eigencssfile.css
 widescreen: true
 always_allow_html: yes
 ---
@@ -87,14 +89,16 @@ ggplot(impr_long, aes(X1, X2, color = factor(R), group = factor(R)))+
 ## Regression imputation | Univariate imputation
 
 ```{r}
-imp_reg <- mice(airquality %>% select(Ozone, Solar.R), method = "norm.predict", printFlag = FALSE)
+imp_reg <- mice(airquality %>% select(Ozone, Solar.R), 
+                method = "norm.predict", print = F)
 xyplot(imp_reg, Ozone ~ Solar.R)
 ```
 
 ## Regression imputation | Multivariate imputation
 
 ```{r}
-imp_reg <- mice(airquality, method = "norm.predict", printFlag = FALSE)
+imp_reg <- mice(airquality, 
+                method = "norm.predict", print = F)
 xyplot(imp_reg, Ozone ~ Solar.R)
 ```
 
@@ -108,7 +112,7 @@ xyplot(imp_reg, Ozone ~ Solar.R)
 
 ```{r echo=FALSE}
 
-imp_sreg1 <- mice(dat, method = "norm.nob", printFlag = FALSE)
+imp_sreg1 <- mice(dat, method = "norm.nob", print = F)
 #xyplot(imp_sreg1, X2 ~ X1)
 
 impsr_long <- complete(imp_sreg1, action = "long", include = FALSE) %>% 
@@ -125,14 +129,14 @@ ggplot(impsr_long, aes(X1, X2, color = factor(R), group = factor(R)))+
 ## Stochastic regression imputation | Univariate
 
 ```{r}
-imp_reg <- mice(airquality %>% select(Ozone, Solar.R), method = "norm.nob", printFlag = FALSE)
+imp_reg <- mice(airquality %>% select(Ozone, Solar.R), method = "norm.nob", print = F)
 xyplot(imp_reg, Ozone ~ Solar.R)
 ```
 
 ## Stochastic regression imputation | Multivariate
 
 ```{r}
-imp_reg <- mice(airquality, method = "norm.nob", printFlag = FALSE)
+imp_reg <- mice(airquality, method = "norm.nob", print = F)
 xyplot(imp_reg, Ozone ~ Solar.R)
 ```
 
@@ -147,7 +151,7 @@ xyplot(imp_reg, Ozone ~ Solar.R)
 
 ```{r echo=FALSE}
 
-imp_breg1 <- mice(dat, method = "norm", printFlag = FALSE)
+imp_breg1 <- mice(dat, method = "norm", print = F)
 #xyplot(imp_sreg1, X2 ~ X1)
 
 impbr_long <- complete(imp_breg1, action = "long", include = FALSE) %>% 
@@ -172,14 +176,14 @@ geom_point(size = 2)+
 ## Bayesian regression imputation | Univariate
 
 ```{r}
-imp_breg <- mice(airquality %>% select(Ozone, Solar.R), method = "norm", printFlag = FALSE)
+imp_breg <- mice(airquality %>% select(Ozone, Solar.R), method = "norm", print = F)
 xyplot(imp_breg, Ozone ~ Solar.R)
 ```
 
 ## Bayesian regression imputation | Multivariate
 
 ```{r}
-imp_breg <- mice(airquality, method = "norm", printFlag = FALSE)
+imp_breg <- mice(airquality, method = "norm", print = F)
 xyplot(imp_breg, Ozone ~ Solar.R)
 ```
 
@@ -241,14 +245,15 @@ geom_point(size = 2)+
 ## Predictive mean matching | Univariate
 
 ```{r}
-imp_pmm <- mice(airquality %>% select(Ozone, Solar.R), method = "pmm", printFlag = FALSE)
+imp_pmm <- mice(airquality %>% select(Ozone, Solar.R), 
+                method = "pmm", print = F)
 xyplot(imp_pmm, Ozone ~ Solar.R)
 ```
 
 ## Predictive mean matching | Multivariate
 
 ```{r}
-imp_pmm <- mice(airquality, method = "pmm", printFlag = FALSE)
+imp_pmm <- mice(airquality, method = "pmm", print = F)
 xyplot(imp_pmm, Ozone ~ Solar.R)
 ```
 
