@@ -30,22 +30,24 @@ theme_set(theme_light())
 * A method to improve the main analysis results, (so not to complete or fill in data)
   + Unbiased estimates
   + Improved precision and thus power
+* R package: `mice`
+  
 
 ## Multiple Imputation process
 
-1. Imputation phase
-2. Analysis phase
-3. Pooling phase
+* Imputation phase
+* Analysis phase
+* Pooling phase
 
-> incomplete data
-> generate multiple copies of the same dataset, but each time differenty imputed values
-> analyze each imputed dataset
-> pool results for analyses to final study result
+> 1. incomplete data
+> 2. generate multiple copies of the same dataset, but each time differenty imputed values
+> 3. analyze each imputed dataset
+> 4. pool results for analyses to final study result
 
 ## Imputation phase
 
 * Imputing the missing data entries with multiple "plausible" values
-* Specify the imputaton model 
+* Specify the imputation model 
   + method to estimate imputed values
   + predictors used in the model
   
@@ -76,7 +78,9 @@ psych::describe(airquality) %>%
 ## Regression imputation | Concept
 
 ```{r echo=FALSE}
-dat <- data.frame(MASS::mvrnorm(n = 50, mu = c(0,0), Sigma = matrix(c(1, 0.75,  0.75, 1),2,2)))
+seed(1234)
+dat1 <- data.frame(MASS::mvrnorm(n = 50, mu = c(0,0), Sigma = matrix(c(1, 0.75,  0.75, 1),2,2)))
+dat <- dat1
 dat[10,"X2"] <- NA
 
 imp_reg1 <- mice(dat, method = "norm.predict", printFlag = FALSE)
@@ -95,16 +99,14 @@ ggplot(impr_long, aes(X1, X2, color = factor(R), group = factor(R)))+
 ## Regression imputation | Univariate imputation
 
 ```{r}
-imp_reg <- mice(airquality %>% select(Ozone, Solar.R), 
-                method = "norm.predict", print = F)
+imp_reg <- mice(airquality %>% select(Ozone, Solar.R), method = "norm.predict", print = F)
 xyplot(imp_reg, Ozone ~ Solar.R)
 ```
 
 ## Regression imputation | Multivariate imputation
 
 ```{r}
-imp_reg <- mice(airquality, 
-                method = "norm.predict", print = F)
+imp_reg <- mice(airquality,  method = "norm.predict", print = F)
 xyplot(imp_reg, Ozone ~ Solar.R)
 ```
 
@@ -167,15 +169,15 @@ imp_breg1 <- mice(dat, method = "norm", print = F)
 impbr_long <- complete(imp_breg1, action = "long", include = FALSE) %>% 
   mutate(R = ifelse(.id == 10, 0, 1))
 
-#lm(X2 ~ X1, dat)
+lm(X2 ~ X1, dat)
 
 ggplot(impbr_long, aes(X1, X2, color = factor(R), group = factor(R)))+
   geom_smooth(method = "lm", se = FALSE, color = "#00BFC4", size = 1)+
-  geom_abline(intercept = 0.015, slope = 0.83, color = "#F8766D", size = 1)+
-  geom_abline(intercept = 0.08, slope = 0.81, color = "#F8766D", size = 1)+
-  geom_abline(intercept = 0.12, slope = 0.8, color = "#F8766D", size = 1)+
-  geom_abline(intercept = 0.2, slope = 0.85, color = "#F8766D", size = 1)+
-  geom_abline(intercept = 0.1, slope = 0.7, color = "#F8766D", size = 1)+
+  geom_abline(intercept = 0.015, slope = 0.78, color = "#F8766D", size = 1)+
+  geom_abline(intercept = 0.08, slope = 0.7, color = "#F8766D", size = 1)+
+  geom_abline(intercept = 0.12, slope = 0.63, color = "#F8766D", size = 1)+
+  geom_abline(intercept = -0.2, slope = 0.6, color = "#F8766D", size = 1)+
+  geom_abline(intercept = -0.3, slope = 0.56, color = "#F8766D", size = 1)+
 geom_point(size = 2)+
   theme(legend.position = "none")
 #blue = #00BFC4
@@ -206,7 +208,7 @@ xyplot(imp_breg, Ozone ~ Solar.R)
 * Select $k$ nearest neighbors to this predicted value from the observed data
 * Randomly draw one donor to use as imputed value
 
-## Predictive mean matching | concept
+## Predictive mean matching | Concept
 
 
 ```{r echo=FALSE}
@@ -229,7 +231,7 @@ geom_point(size = 2, color = "#00BFC4")+
 ``` 
 
 
-## Predictive mean matching | concept
+## Predictive mean matching | Concept
 
 
 ```{r echo=FALSE}
@@ -255,8 +257,7 @@ geom_point(size = 2)+
 ## Predictive mean matching | Univariate
 
 ```{r}
-imp_pmm <- mice(airquality %>% select(Ozone, Solar.R), 
-                method = "pmm", print = F)
+imp_pmm <- mice(airquality %>% select(Ozone, Solar.R), method = "pmm", print = F)
 xyplot(imp_pmm, Ozone ~ Solar.R)
 ```
 
@@ -270,16 +271,115 @@ xyplot(imp_pmm, Ozone ~ Solar.R)
 
 ## Methods for categorical data
 
-* Logistic regression
-* Nominal regression
-* 
+* Bayesian logistic regression `method = logreg`
+* Bayesian Polytomous regression `method = polyreg`
+* Classification and regression trees `method = cart`
 
-## Predictor matrix
 
-* Defines for each variable with missing data, the predictors for the imputation. 
+## Bayesian logistic regression | Algorithm
+
+* Imputed value: $Log\frac{P(Y_{miss})}{1-P(Y_{mis})} = \dot{\beta}_0 + X_{mis}\dot{\beta}_1 + \epsilon$
+
+* Parameters $\dot{\beta}_0$ and $\dot{\beta}_1$ are drawn from their posterior distribution.
+
+* $\epsilon$ is normally distributed residual error
+
+
+## Bayesian logistic regression | Concept
 
 ```{R}
-imp_pmm$predictorMatrix
+dat1 <- dat %>%
+  mutate(X2 = factor(ifelse(X2 > 0, 1, 0)))
+imp_log1 <- mice(dat1, method = "logreg", print = F)
+#xyplot(imp_sreg1, X2 ~ X1)
+
+imp_logreglong <- complete(imp_log1, action = "long", include = FALSE) %>% 
+  mutate(R = ifelse(.id == 10, 0, 1))
+
+#lm(X2 ~ X1, dat)
+
+ggplot(imp_logreglong, aes(x = X1, y = X2, color = factor(R), group = factor(R)))+
+geom_point(size = 2, alpha = 0.8)+
+  theme(legend.position = "none") 
+
+
+```
+
+
+
+## Bayesian logistic regression | Algorithm
+
+* Fit a multinomial regression model.
+
+* Parameters are drawn from their posterior distribution (Bayesian).
+
+* Compute the predicted category.
+
+* Add normally distributed residual error to account for sampling variance.
+
+## Bayesian polytomous regression | Concept
+
+```{R}
+dat2 <- dat %>%
+  mutate(X2 = cut(X2, 
+                   breaks=c(-Inf, -0.42, 0.52, Inf), 
+                   labels=c("low","middle","high")))
+imp_plog1 <- mice(dat2, method = "polyreg", print = F)
+#xyplot(imp_sreg1, X2 ~ X1)
+
+imp_logreglong <- complete(imp_plog1, action = "long", include = FALSE) %>% 
+  mutate(R = ifelse(.id == 10, 0, 1))
+
+#lm(X2 ~ X1, dat)
+
+ggplot(imp_logreglong, aes(x = X1, y = X2, color = factor(R), group = factor(R)))+
+geom_point(size = 2, alpha = 0.8)+
+  theme(legend.position = "none") 
+
+
+```
+
+
+
+## Classification and regression trees | Algorithm
+
+* Draw a random bootstrap sample as training set.
+* Fit the tree model using the observed data.
+* Find the predicted terminal node for the missing value
+* Use the observed cases at the predicted terminal node as donors
+* Randomly draw the imputed value from the observed donor cases
+
+## Classification and regression trees | Concept
+
+```{R}
+dat[c(15,14,20,26,46), "X2"] <- NA
+imp_rf1 <- mice(dat, method = "rf", print = F)
+#xyplot(imp_sreg1, X2 ~ X1)
+
+imp_rf1long <- complete(imp_rf1, action = "long", include = FALSE) %>% 
+  mutate(R = ifelse(.id == 10, 0, 1))
+
+#lm(X2 ~ X1, dat)
+
+ggplot(imp_rf1long, aes(X1, X2, color = factor(R), group = factor(R)))+
+geom_point(size = 2)+
+  theme(legend.position = "none")
+#blue = #00BFC4
+```
+
+
+## Classification and regression trees | Univariate
+
+```{r}
+imp_rf <- mice(airquality %>% select(Ozone, Solar.R), method = "rf", print = F)
+xyplot(imp_rf, Ozone ~ Solar.R)
+```
+
+## Classification and regression trees | Multivariate
+
+```{r}
+imp_rf <- mice(airquality, method = "rf", print = F)
+xyplot(imp_rf, Ozone ~ Solar.R)
 ```
 
 
@@ -307,10 +407,42 @@ imp_pmm$predictorMatrix
 * To check the convergence of the algorithm
 
 ```{r}
-imp <- mice(airquality, maxit = 20, print = F)
+imp <- mice(airquality, maxit = 10, print = F)
 plot(imp)
 
 ```
+
+## Iteration plot
+
+* Use additional iterations when in doubt if convergence is reached
+
+```{r}
+imp <- mice(airquality, maxit = 25, print = F)
+plot(imp)
+
+```
+
+
+## Iteration plot
+
+* Convergence may need more iterations
+
+```{r, cache = T}
+imp <- mice(boys, print = F)
+plot(imp, c("wgt", "gen", "tv"))
+
+```
+
+## Iteration plot
+
+* Looks better for gen and tv, but there seems to be a problem for wgt. 
+
+```{r, cache = T}
+imp <- mice(boys, maxit = 25, print = F)
+plot(imp, c("wgt", "gen", "tv"))
+
+```
+
 
 ## Number of imputations
 
