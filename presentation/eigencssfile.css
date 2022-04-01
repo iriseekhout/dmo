@@ -1,4 +1,30 @@
+/* logo on title slide*/
 
+.gdbar img {
+  width: 300px !important;
+  height: 300px !important;
+  left: initial;
+  right: 0;
+}
+
+.gdbar {
+  width: 1000px !important;
+  height: 350px !important;
+}
+
+aside.gdbar {
+ left: initial;
+ right: 0;
+ top: initial;
+ bottom: 1px !important;
+}
+
+/*logo footer*/
+slides > slide:not(.nobackground):before {
+  width: 100px;
+  height: 100px;
+  background-size: 110px 110px;
+}
 
 /* Code */
   pre {

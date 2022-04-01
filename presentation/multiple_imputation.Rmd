@@ -5,7 +5,7 @@ subtitle: "Workshop name"
 date: "`r format(Sys.Date())`"
 output: 
   ioslides_presentation:
-    logo: Puzzle_zgnb3.jpg
+    logo: Puzzle_zgnb3_m.jpg
     theme: readable
     css: eigencssfile.css
 widescreen: true
@@ -27,6 +27,9 @@ theme_set(theme_light())
 
 * Imputing the missing data entries with multiple "plausible" values.
 * Takes imputation uncertainty into account
+* A method to improve the main analysis results, (so not to complete or fill in data)
+  + Unbiased estimates
+  + Improved precision and thus power
 
 ## Multiple Imputation process
 
@@ -41,16 +44,18 @@ theme_set(theme_light())
 
 ## Imputation phase
 
-* Imputing the missing data entries with a "plausible" value
-* MICE: multiple imputation by *chained* equations
+* Imputing the missing data entries with multiple "plausible" values
+* Specify the imputaton model 
+  + method to estimate imputed values
+  + predictors used in the model
+  
 
+## Methods for continuous variables
 
-## Estimate imputed values
-
-* Regression imputation `norm.predict`
-* Stochastic regression imputation (regression + residual error) `norm.nob`
-* Stochastic regression with parameter uncertainty `norm`
-* Predictive mean matching `pmm`
+* Regression imputation `method = norm.predict`
+* Stochastic regression imputation (regression + residual error) `method = norm.nob`
+* Stochastic regression with parameter uncertainty `method = norm`
+* Predictive mean matching `method = pmm`
 
 
 ## Example data 
@@ -64,6 +69,7 @@ psych::describe(airquality) %>%
 ## Regression imputation | Algorithm
 
 * Imputed value: $Y_{imp} = \hat{\beta}_0 + X_{mis}\hat{\beta}_1 + \epsilon$
+
 * Parameters $\hat{\beta}_0$ and $\hat{\beta}_1$ are estimated from the observed data.
 
 
@@ -105,7 +111,9 @@ xyplot(imp_reg, Ozone ~ Solar.R)
 ## Stochastic regression imputation | Algorithm
 
 * Imputed value: $Y_{imp} = \hat{\beta}_0 + X_{mis}\hat{\beta}_1 + \epsilon$
+
 * Parameters $\hat{\beta}_0$ and $\hat{\beta}_1$ are estimated from the observed data.
+
 * $\epsilon$ is normally distributed residual error
 
 ## Stochastic regression imputation | Concept
@@ -144,7 +152,9 @@ xyplot(imp_reg, Ozone ~ Solar.R)
 ## Bayesian regression imputation | Algorithm
 
 * Imputed value: $Y_{imp} = \dot{\beta}_0 + X_{mis}\dot{\beta}_1 + \epsilon$
+
 * Parameters $\dot{\beta}_0$ and $\dot{\beta}_1$ are drawn from their posterior distribution.
+
 * $\epsilon$ is normally distributed residual error
 
 ## Bayesian regression imputation | Concept
@@ -258,15 +268,100 @@ xyplot(imp_pmm, Ozone ~ Solar.R)
 ```
 
 
-## Chained equations
+## Methods for categorical data
+
+* Logistic regression
+* Nominal regression
+* 
+
+## Predictor matrix
+
+* Defines for each variable with missing data, the predictors for the imputation. 
+
+```{R}
+imp_pmm$predictorMatrix
+```
+
+
+## Algorithm for imputations
+
+* Fully Conditional Specification (FCS): imputes variable-by-variable.
+* For each variable the imputation model can be different:
+  + method
+  + predictors
+
+* Joint modelling: imputes from a multivariate distribution
 
 
 ## Iterations
 
+* One iteration, consists of one cycle through all variables that need to be imputed. 
+  + The algorithm starts with a random draw from the observed data.
+  + Then imputes the incomplete data in a variable-by-variable fashion.
+* Typically 5 to 10 iterations before an imputed dataset is generated.
+* Iterations are repeated to ensure convergence of the algorithm
+
+
+## Iteration plot
+
+* To check the convergence of the algorithm
+
+```{r}
+imp <- mice(airquality, maxit = 20, print = F)
+plot(imp)
+
+```
 
 ## Number of imputations
+
+* Theoretically, higher $m$ is better. 
+* Usually, use $m = 5$ for model building and $m ~ % missing data$ for final analysis. 
+* In lower $m$ the between-imputation-variance is enlarged by $1/m$ before computing the total variance.
 
 
 ## Analysis phase
 
+* Each imputed dataset is analyzed, with the substantive analysis model
+* This results in $m$ sets of results
+
+* Workflow:
+  + Imputation
+  + Analysis
+  + Pooling
+
+
 ## Pooling phase
+
+* Pool the analysis results to obtain final parameter estimates.
+* Usual normally distributed parameters: Rubin's Rules
+
+
+## Rubin's Rules
+
+* Pooling of point estimates that are normally distributed over the imputed datasets. 
+* Means, standard deviations, regression estimates, linear predictors, proportions.
+* For pooling point estimates, use mean:
+
+  > $\hat\theta = \sum^m_{i=1}{\theta_i}$
+
+* Pooling of variance or standard error around the estimate, combine the within and between imputation variance.
+
+## Variance pooling Rubins Rules
+
+* Between variance:
+  > $\sigma^2_{between} = \frac{\sum^m_{i=1}(\beta_i - \overline\beta)^2}{m-1}$
+* Within variance:
+  > $\sigma^2_{within} = \frac{\sum^m_{i=1}\sigma^2_i}{m}$
+* Total variance: 
+  > $\sigma^2_{total} = \sigma^2_{within} + \sigma^2_{between} + \frac{\sigma^2_{between}}{m}$
+
+## Pooling of non-normal parameters
+
+* Use a transformation to approximate a normal distribution
+* Examples:
+  + Correlation: Fisher $z$
+  + Odds Ratio, Relative Risk, Hazard ratio: log transformation
+  + Explained variance: Fisher $z$ for $\sqrt{R^2}$
+  
+  
+  
