@@ -21,9 +21,13 @@ aside.gdbar {
 
 /*logo footer*/
 slides > slide:not(.nobackground):before {
-  width: 100px;
-  height: 100px;
-  background-size: 110px 110px;
+  width:60px;
+  height: 60px;
+  background-size: 65px 65px;
+  left:initial;
+  right:1px;
+  top: 1px;
+  bottom: initial;
 }
 
 /* Code */
