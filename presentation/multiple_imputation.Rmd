@@ -78,7 +78,7 @@ psych::describe(airquality) %>%
 ## Regression imputation | Concept
 
 ```{r echo=FALSE}
-seed(1234)
+set.seed(7899)
 dat1 <- data.frame(MASS::mvrnorm(n = 50, mu = c(0,0), Sigma = matrix(c(1, 0.75,  0.75, 1),2,2)))
 dat <- dat1
 dat[10,"X2"] <- NA
@@ -169,7 +169,7 @@ imp_breg1 <- mice(dat, method = "norm", print = F)
 impbr_long <- complete(imp_breg1, action = "long", include = FALSE) %>% 
   mutate(R = ifelse(.id == 10, 0, 1))
 
-lm(X2 ~ X1, dat)
+#lm(X2 ~ X1, dat)
 
 ggplot(impbr_long, aes(X1, X2, color = factor(R), group = factor(R)))+
   geom_smooth(method = "lm", se = FALSE, color = "#00BFC4", size = 1)+
@@ -181,7 +181,7 @@ ggplot(impbr_long, aes(X1, X2, color = factor(R), group = factor(R)))+
 geom_point(size = 2)+
   theme(legend.position = "none")
 #blue = #00BFC4
-# red = 
+# red = F8766D
 ``` 
 
 
@@ -287,7 +287,7 @@ xyplot(imp_pmm, Ozone ~ Solar.R)
 
 ## Bayesian logistic regression | Concept
 
-```{R}
+```{R, echo = F}
 dat1 <- dat %>%
   mutate(X2 = factor(ifelse(X2 > 0, 1, 0)))
 imp_log1 <- mice(dat1, method = "logreg", print = F)
@@ -319,7 +319,7 @@ geom_point(size = 2, alpha = 0.8)+
 
 ## Bayesian polytomous regression | Concept
 
-```{R}
+```{R, echo = F}
 dat2 <- dat %>%
   mutate(X2 = cut(X2, 
                    breaks=c(-Inf, -0.42, 0.52, Inf), 
@@ -351,9 +351,9 @@ geom_point(size = 2, alpha = 0.8)+
 
 ## Classification and regression trees | Concept
 
-```{R}
+```{R, echo = F}
 dat[c(15,14,20,26,46), "X2"] <- NA
-imp_rf1 <- mice(dat, method = "rf", print = F)
+imp_rf1 <- mice(dat, method = "cart", print = F)
 #xyplot(imp_sreg1, X2 ~ X1)
 
 imp_rf1long <- complete(imp_rf1, action = "long", include = FALSE) %>% 
@@ -371,14 +371,14 @@ geom_point(size = 2)+
 ## Classification and regression trees | Univariate
 
 ```{r}
-imp_rf <- mice(airquality %>% select(Ozone, Solar.R), method = "rf", print = F)
+imp_rf <- mice(airquality %>% select(Ozone, Solar.R), method = "cart", print = F)
 xyplot(imp_rf, Ozone ~ Solar.R)
 ```
 
 ## Classification and regression trees | Multivariate
 
 ```{r}
-imp_rf <- mice(airquality, method = "rf", print = F)
+imp_rf <- mice(airquality, method = "cart", print = F)
 xyplot(imp_rf, Ozone ~ Solar.R)
 ```
 
@@ -480,12 +480,22 @@ plot(imp, c("wgt", "gen", "tv"))
 
 ## Variance pooling Rubins Rules
 
+
+
 * Between variance:
+
   > $\sigma^2_{between} = \frac{\sum^m_{i=1}(\beta_i - \overline\beta)^2}{m-1}$
+
 * Within variance:
+  
   > $\sigma^2_{within} = \frac{\sum^m_{i=1}\sigma^2_i}{m}$
-* Total variance: 
+
+
+
+* **Total variance:** 
+
   > $\sigma^2_{total} = \sigma^2_{within} + \sigma^2_{between} + \frac{\sigma^2_{between}}{m}$
+
 
 ## Pooling of non-normal parameters
 
