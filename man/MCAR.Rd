@@ -26,10 +26,9 @@ A data frame that contains missing observations
 Generate MCAR (missing completely at random) data
 }
 \examples{
-library(MASS)
-x <- mvrnorm(n=100,mu=c(0,0,0), Sigma=matrix(c(5,1,1,1,5,1,1,1,5),3,3))
+x <- MASS::mvrnorm(n=100,mu=c(0,0,0), Sigma=matrix(c(5,1,1,1,5,1,1,1,5),3,3))
 alpha <- 0.25
-pattern <- matrix(c(1,1,0,1,0,1),2,3, byrow=T)
+pattern <- matrix(c(1,1,0,1,0,1),2,3, byrow=TRUE)
 f <- c(0.5,0.5)
 MCAR(x,alpha,pattern,f)
 }

@@ -1,2 +1,8 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^markdown$
+^presentation$
+^data-raw$
+^scripts$
+^LICENSE\.md$
+^README\.Rmd$

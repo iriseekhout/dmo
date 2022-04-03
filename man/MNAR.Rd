@@ -10,6 +10,7 @@ MNAR(
   pattern = "random",
   f = rep(1/nrow(pattern)),
   g = 4,
+  npattern = NULL,
   a = pattern
 )
 }
@@ -27,6 +28,8 @@ patterns; for each patter 0 indicates missing and 1 observed.
 \item{g}{the odds of the patterns to occur, the strength of the mechanism}
 
 \item{npattern}{the number of patterns when patterns are randomly generated.}
+
+\item{a}{linear predictor for missings}
 }
 \value{
 A data frame that contains missing observations
@@ -35,10 +38,9 @@ A data frame that contains missing observations
 Generate MNAR (missign not at random) data
 }
 \examples{
-library(MASS)
-x <- mvrnorm(n=100,mu=c(0,0,0), Sigma=matrix(c(5,1,1,1,5,1,1,1,5),3,3))
+x <- MASS::mvrnorm(n=100,mu=c(0,0,0), Sigma=matrix(c(5,1,1,1,5,1,1,1,5),3,3))
 alpha <- 0.25
-pattern <- matrix(c(1,1,0,1,0,1),2,3, byrow=T)
+pattern <- matrix(c(1,1,0,1,0,1),2,3, byrow=TRUE)
 f <- c(0.5,0.5)
 g <- c(4,4)
 MNAR(x,alpha,pattern,f,g)

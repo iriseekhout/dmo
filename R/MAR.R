@@ -11,15 +11,18 @@
 #' @param npattern the number of patterns when patterns are randomly generated.
 #' @param f frequency of each pattern
 #' @param g the odds of the patterns to occur, the strength of the mechanism
+#' @param a linear predictor for missings
 #'
 #' @return A data frame that contains missing observations
 #' @export
+#' 
+#' @importFrom stats runif
+#' @importFrom MASS mvrnorm
 #'
 #' @examples
-#' library(MASS)
-#' x <- mvrnorm(n=100,mu=c(0,0,0), Sigma=matrix(c(5,1,1,1,5,1,1,1,5),3,3))
+#' x <- MASS::mvrnorm(n=100,mu=c(0,0,0), Sigma=matrix(c(5,1,1,1,5,1,1,1,5),3,3))
 #' alpha <- 0.25
-#' pattern <- matrix(c(1,1,0,1,0,1),2,3, byrow=T)
+#' pattern <- matrix(c(1,1,0,1,0,1),2,3, byrow=TRUE)
 #' f <- c(0.5,0.5)
 #' g <- c(4,4)
 #' MAR(x,alpha,pattern,f,g)
@@ -112,7 +115,7 @@ MAR <- function(x,
   resp[which(bool !=0), c(1:m)] <- matrix(1, sum(bool), m)
   bool <- cand > 0                # vervanging voor loop
   bool <- ifelse(bool == T, 1, 0) # vervanging voor loop
-  if ( any(bool == 1) )	{resp[which(bool !=0), c(1:m)] <- matrix((pattern[cand,]), byrow = T)}  # vervanging voor loop
+  if ( any(bool == 1) )	{resp[which(bool !=0), c(1:m)] <- matrix((pattern[cand,]), byrow = TRUE)}  # vervanging voor loop
   testresp <- (apply (resp, 1, prod))
   xobs <- ifelse(resp==1, x , NA)
   if(is.data.frame(orig)) xobs <- data.frame(xobs)

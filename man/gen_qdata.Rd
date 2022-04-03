@@ -5,14 +5,12 @@
 \title{Generate questionnaire data
 A function to generate questionnaire data with normally distributed item score with a mean of 0.}
 \usage{
-gen_qdata(n, nq, k, likert = FALSE)
+gen_qdata(n, k, likert = FALSE)
 }
 \arguments{
 \item{n}{sample size}
 
-\item{nq}{number of questionnaires}
-
-\item{k}{vector of length nq indicating number of items per questionnaire}
+\item{k}{vector number of items per questionnaire}
 
 \item{likert}{continuous scores transformed to likert item scores}
 }

@@ -4,15 +4,15 @@
 \alias{calculate_ts}
 \title{Calculate total scores}
 \usage{
-calculate_ts(x, nq, k, .fun = sum)
+calculate_ts(x, k, .fun = sum)
 }
 \arguments{
 \item{x}{data.frame with item scores that are to be summarized into a
 total score.}
 
-\item{nq}{number of questionnaires}
-
 \item{k}{number of items per questionnaire}
+
+\item{.fun}{function used to summarise the item scores}
 }
 \value{
 data.frame with `ncol = nq` and `nrow = nrow(x)`.
@@ -21,7 +21,7 @@ data.frame with `ncol = nq` and `nrow = nrow(x)`.
 Calculate total scores
 }
 \examples{
-x <- gen_qdata(n=100, nq=5, k= c(10,10,10,10,10))
-calculate_ts(x, 5, c(10,10,10,10,10), sum)
-calculate_ts(x, 5, c(10,10,10,10,10), mean)
+x <- gen_qdata(n=100, k= c(10,10,10,10,10))
+calculate_ts(x, c(10,10,10,10,10), sum)
+calculate_ts(x, c(10,10,10,10,10), mean)
 }
