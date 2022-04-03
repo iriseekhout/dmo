@@ -31,14 +31,14 @@ Data are generated for 100 subjects. Each subjects has observations for 5 questi
 #generate questionnaire data
 k <- c(10,10,10,10,10)
 nq <- 5
-x <- dmo::gen_qdata(n=100, nq=nq, k= k)
+x <- dmo::gen_qdata(n=100, k= k)
 
 #generate covariate data
 cov <- MASS::mvrnorm(n=100, mu=c(5,5,5), Sigma=matrix(c(10,1,1,1,10,1,1,1,10),3,3))
 colnames(cov) <- c("cov1", "cov2", "cov3")
 
 #combine in data.frame
-x <- data.frame(x,cov)
+x1 <- data.frame(x,cov)
 
 ```
 
@@ -61,8 +61,8 @@ f <- c(0.5,0.5)
 g <- c(4,4)
 
 #generate missings in the data
-x <- MAR(x,alpha,pattern,f,g)
-colnames(x) <- c(paste0("I",1:sum(k)),c("cov1", "cov2", "cov3") )
+x <- MAR(x1,alpha,pattern,f,g)
+colnames(x) <- colnames(x1)
 
 head(x, 15)
 ```
@@ -72,7 +72,7 @@ head(x, 15)
 
 Calculate the total scores (sum scores) for each questionnaire, only when all items are observed.
 ```{r}
-ts <- dmo::calculate_ts(x, nq=5,k= c(10,10,10,10,10))
+ts <- dmo::calculate_ts(x, k= c(10,10,10,10,10))
 data <- data.frame(x,ts)
 ```
 
@@ -117,9 +117,9 @@ meth <- ini$meth
 nq <- 5
 k <- c(10,10,10,10,10)
 for(q in seq_along(1:nq)){
-  meth[paste0("TS",q)] <- paste0("~I(", paste(paste0("I",1:k[q]), collapse="+"), ")")
+  meth[paste0("TSQ",q)] <- paste0("~I(", paste(paste0("Q", q, "_i",1:k[q]), collapse="+"), ")")
 }
-meth[c("TS1", "TS2", "TS3", "TS4", "TS5")]
+meth[c("TSQ1", "TSQ2", "TSQ3", "TSQ4", "TSQ5")]
 ```
 
 #### Predictor matrix
@@ -130,21 +130,22 @@ In predictor matrix: target variable is in row and the predictor variables are i
 
 ```{r}
 pred <- ini$predictorMatrix
-pred[paste0("I", 1:10),] <- 0
-pred[paste0("I", 1:10),paste0("I", 1:10)] <- 1
-pred[paste0("I", 1:10),c("TS2","TS3","TS4","TS5")] <- 1
-pred[paste0("I", 11:20),] <- 0
-pred[paste0("I", 11:20),paste0("I", 11:20)] <- 1
-pred[paste0("I", 11:20),c("TS1","TS3","TS4","TS5")] <- 1
-pred[paste0("I", 21:30),] <- 0
-pred[paste0("I", 21:30),paste0("I", 21:30)] <- 1
-pred[paste0("I", 21:30),c("TS1","TS2","TS4","TS5")] <- 1
-pred[paste0("I", 31:40),] <- 0
-pred[paste0("I", 31:40),paste0("I", 31:40)] <- 1
-pred[paste0("I", 31:40),c("TS1","TS2","TS3","TS5")] <- 1
-pred[paste0("I", 41:50),] <- 0
-pred[paste0("I", 41:50),paste0("I", 41:50)] <- 1
-pred[paste0("I", 41:50),c("TS1","TS2","TS3","TS4")] <- 1
+pred[paste0("Q1_i", 1:10),] <- 0
+pred[paste0("Q1_i", 1:10),paste0("Q1_i", 1:10)] <- 1
+pred[paste0("Q1_i", 1:10),c("TSQ2","TSQ3","TSQ4","TSQ5")] <- 1
+pred[paste0("Q2_i", 1:10),] <- 0
+pred[paste0("Q2_i", 1:10),paste0("Q2_i", 1:10)] <- 1
+pred[paste0("Q2_i", 1:10),c("TSQ1","TSQ3","TSQ4","TSQ5")] <- 1
+pred[paste0("Q3_i", 1:10),] <- 0
+pred[paste0("Q3_i", 1:10),paste0("Q3_i", 1:10)] <- 1
+pred[paste0("Q3_i", 1:10),c("TSQ2","TSQ1","TSQ4","TSQ5")] <- 1
+pred[paste0("Q4_i", 1:10),] <- 0
+pred[paste0("Q4_i", 1:10),paste0("Q4_i", 1:10)] <- 1
+pred[paste0("Q4_i", 1:10),c("TSQ2","TSQ3","TSQ1","TSQ5")] <- 1
+pred[paste0("Q5_i", 1:10),] <- 0
+pred[paste0("Q5_i", 1:10),paste0("Q5_i", 1:10)] <- 1
+pred[paste0("Q5_i", 1:10),c("TSQ2","TSQ3","TSQ4","TSQ1")] <- 1
+
 pred[,colnames(cov)] <- 1 #covariates as predictors for all items
 pred <- pred*ini$predictorMatrix
 head(pred, 10)
@@ -166,8 +167,8 @@ imp2 <- mice(data, m=15, meth=meth,pred=pred, maxit=10, seed=12354, print=FALSE)
 The the imputations for the Total scores in the total score imputation (`imp1`) passive imputation procedure (`imp2`).
 
 ```{r}
-plot(imp1, paste0("TS",1:5))
-plot(imp2, paste0("TS",1:5))
+plot(imp1, paste0("TSQ",1:5))
+plot(imp2, paste0("TSQ",1:5))
 ```
 
 ## Combine imputations
@@ -195,10 +196,10 @@ implist <- lapply(1:15, function(x){
   x1 <- complete(imp1, x)
   x2 <- complete(imp2, x)
   tsimp <- lapply(1:nq, function(x){
-    ifelse(indicator[,x]==1, x2[,paste0("TS",x)], x1[,paste0("TS",x)] )
+    ifelse(indicator[,x]==1, x2[,paste0("TSQ",x)], x1[,paste0("TSQ",x)] )
   })
   tsimp <- data.frame(tsimp)
-  colnames(tsimp) <- paste0("impTS",1:nq)
+  colnames(tsimp) <- paste0("impTSQ",1:nq)
   data.frame(x1,tsimp)
 })
 ```
@@ -209,7 +210,7 @@ Save data in an imputation list for analysis and test relation between TS1 and T
 
 ```{r}
 impdata <- imputationList(implist)
-fit <- with (impdata, lm(impTS1~impTS3 )) 
+fit <- with (impdata, lm(impTSQ1~impTSQ3 )) 
 summary(pool (fit))
 
 ```
