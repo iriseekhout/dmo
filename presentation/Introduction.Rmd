@@ -1,0 +1,83 @@
+---
+title: "Welcome"
+author: "Dr. Iris Eekhout"
+subtitle: "Workshop name"
+date: "`r format(Sys.Date())`"
+output: 
+  ioslides_presentation:
+    logo: Puzzle_zgnb3_m.jpg
+    theme: readable
+    css: eigencssfile.css
+widescreen: true
+always_allow_html: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Iris Eekhout
+
+PhD project **Don't Miss Out!** | www.missingdata.nl
+
+Personal website: www.iriseekhout.com
+
+GitHub: iriseekhout
+
+**Interests**:
+
+* Missing data methods (multiple imputation)
+* Longitudinal (Multilevel) modelling
+* R programming/shiny apps
+* Psychometrics and measurement
+
+
+
+## Workshop name
+
+* Missing data analysis
+* Missing data methods
+* Missing data in practice
+
+* 2 -day workshop
+
+
+## Program | Day 1
+
+**Morning**:
+
+* Lecture 1: Missing data analyses (9:30 - 10:30)
+  + What are missing data, why do we have missing data
+	+ What kind of missing data are there
+	+ What are missing data mechanisms
+	+ How can we investigate our missing data
+
+* Practical 1: Missing data analyses (10:30 - 12:00)
+
+## Program | Day 1
+
+**Afternoon**:
+
+* Lecture 2: Dealing with missing data (13:00 - 14:00)
+	+ Ad hoc solutions and what's wrong with that?
+	+ Multiple imputation - how does it work
+	+ FIML explanation
+	
+* Software demo: How to perform multiple imputation with MICE (14:00 - 14:30)
+
+* Practical 2: Dealing with missing data (14:30- 16:30)
+
+
+## Program | Day 2
+
+**Morning (9:00 - 10:00)**:
+
+* Lecture 3: Missing data in practice
+	+ Missing data in questionnaires
+	+ Missing data in longitudinal designs
+
+* Practical 3: Missing data in practice (10:00 - 13:00)
+	+ Discuss practical issues of participants.
+
+
+
