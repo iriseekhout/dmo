@@ -1,0 +1,158 @@
+---
+title: "Multilevel imputation"
+author: "Dr. Iris Eekhout"
+subtitle: "Workshop name"
+date: "`r format(Sys.Date())`"
+output: 
+  ioslides_presentation:
+    logo: Puzzle_zgnb3_m.jpg
+    theme: readable
+    css: eigencssfile.css
+widescreen: true
+always_allow_html: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(nlme)
+library(dplyr)
+library(mice)
+library(tidyr)
+library(ggplot2)
+
+theme_set(theme_light())
+```
+
+## Multilevel design
+
+* Observations are (hierarchically) clustered in groups
+
+* Example of a two-level structure
++ Student
++ School
+
+* Example of three-level structure
++ Student
++ Class
++ School
+
+## Other examples of multilevel studies
+
+* Longitudinal data: Measurements in subjects
+* Meta-analysis: data in studies
+* Clinical studies: patients in hospitals
+
+## Example data
+
+* The `bdf` data set from the `nlme` package are language scores from grade 8 pupils in elementary schools in the Netherlands. 
+* Pupils in classes in schools
+* Variables at the lowest level (pupils)
+* Variables at the higher levels (school-level or class-level)
+
+## Data structure
+
+```{R}
+bdf %>% select(schoolNR, classNR, pupilNR, schoolSES, ses, IQ.verb, IQ.perf, langPOST ) %>% head(10)
+```
+
+
+## Multilevel data analysis
+
+* Advanced regression analysis technique to take the correlations within the groups (or clusters) into account.
+* Multilevel model
+* Random effects model
+* Mixed effect model
+* Hierarchical regression model
+
+
+## Random intercept
+
+* Estimate of the variance of the intercepts for different schools (covariance adjustment/confounding)
+* $Y_{ij} = \beta_0 + \beta_1*X + \beta_2*school + \epsilon_{ij}$
+* $Y = \beta_0 + \beta_1*X + b_{0j} + \epsilon_{ij}$
++ $b_{0j}$ is random intercept at school level
+
+```{r}
+dat <- data.frame(x = seq(0:100), y = seq(0:100))
+ggplot(dat, aes(x , y))+
+  geom_blank() + 
+  geom_abline(intercept = (2), slope = 0.3, color = 2) +
+  geom_abline(intercept = (5), slope = 0.3, color = 3) +
+  geom_abline(intercept = (8), slope = 0.3, color = 4) +
+  geom_abline(intercept = (11), slope = 0.3, color = 5) +
+  geom_abline(intercept = (14), slope = 0.3, color = 6) +
+  geom_abline(intercept = (17), slope = 0.3, color = 7) 
+
+```
+
+## Random slope
+
+* Estimate of the variance of the slopes for the different schools (interaction or effect-modification)
+* $Y_{ij} = \beta_0 + \beta_1*X + \beta_2*school + \beta_3 * X * school + \epsilon_{ij}$
+* $Y = \beta_0 + \beta_1*X + b_{1j} * X + \epsilon_{ij}$
++ $b_{1j}$ is random slope at school level
+
+```{r}
+dat <- data.frame(x = seq(0:100), y = seq(0:100))
+ggplot(dat, aes(x , y))+
+  geom_blank() + 
+  geom_abline(intercept = (2), slope = 0.3, color = 2) +
+  geom_abline(intercept = (2), slope = 0.4, color = 3) +
+  geom_abline(intercept = (2), slope = 0.5, color = 4) +
+  geom_abline(intercept = (2), slope = 0.6, color = 5) +
+  geom_abline(intercept = (2), slope = 0.7, color = 6) +
+  geom_abline(intercept = (2), slope = 0.8, color = 7) 
+
+```
+
+## Random intercept and slope
+
+* $Y_{ij} = \beta_0 + \beta_1*X + \beta_2*school + \beta_3 * X * school + \epsilon_{ij}$
+* $Y = \beta_0 + \beta_1*X + b_{0j} + b_{1j} * X + \epsilon_{ij}$
++ $b_{0j}$ is random intercept at school level
++ $b_{1j}$ is random slope at school level
+
+```{r}
+dat <- data.frame(x = seq(0:100), y = seq(0:100))
+ggplot(dat, aes(x , y))+
+  geom_blank() + 
+  geom_abline(intercept = (2), slope = 0.3, color = 2) +
+  geom_abline(intercept = (5), slope = 0.4, color = 3) +
+  geom_abline(intercept = (8), slope = 0.5, color = 4) +
+  geom_abline(intercept = (11), slope = 0.6, color = 5) +
+  geom_abline(intercept = (14), slope = 0.7, color = 6) +
+  geom_abline(intercept = (17), slope = 0.8, color = 7) 
+
+```
+
+## Missing data in multilevel data
+
+* At measurement level (Pupil)
++ Outcome (e.g. language score)
++ Predictor (e.g. verbal IQ)
+* At the higher level (class or school)
++ Predictor (e.g. school SES)
++ Class variable itself (e.g. school number)
+
+## Missing data methods
+
+* Missing data in the dependent variable only: **solved by maximum likelihood estimation of the model**
++ Estimation method uses all available data to estimate the model parameters that fit best with the data.
+
+* Missing data in independent variable: multiple imputation
++ Imputation model should take the analysis model into account
++ Multilevel imputation
+
+## Multilevel imputation
+
+```{R}
+bdfmiss <- bdf %>% mutate(prop = runif(n()),
+                          IQ.verb = ifelse(prop < 0.25, NA, IQ.verb)) %>%
+  select(schoolNR, classNR, pupilNR, schoolSES, ses, IQ.verb, IQ.perf, langPOST )
+summary(bdfmiss)
+## brandsma example?
+  
+```
+
+
