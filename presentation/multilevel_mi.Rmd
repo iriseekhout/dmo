@@ -45,15 +45,15 @@ theme_set(theme_light())
 
 ## Example data
 
-* The `bdf` data set from the `nlme` package are language scores from grade 8 pupils in elementary schools in the Netherlands. 
-* Pupils in classes in schools
+* The `brandsma` data set from the `mice` package are language scores from grade 8 pupils in elementary schools in the Netherlands. 
+* Pupils in schools
 * Variables at the lowest level (pupils)
-* Variables at the higher levels (school-level or class-level)
+* Variables at the higher levels (school-level)
 
 ## Data structure
 
 ```{R}
-bdf %>% select(schoolNR, classNR, pupilNR, schoolSES, ses, IQ.verb, IQ.perf, langPOST ) %>% head(10)
+brandsma %>% select(sch, pup, ssi, ses, iqv, iqp, lpo ) %>% head(10)
 ```
 
 
@@ -144,15 +144,32 @@ ggplot(dat, aes(x , y))+
 + Imputation model should take the analysis model into account
 + Multilevel imputation
 
-## Multilevel imputation
+## Multilevel imputation | data example
 
 ```{R}
-bdfmiss <- bdf %>% mutate(prop = runif(n()),
-                          IQ.verb = ifelse(prop < 0.25, NA, IQ.verb)) %>%
-  select(schoolNR, classNR, pupilNR, schoolSES, ses, IQ.verb, IQ.perf, langPOST )
-summary(bdfmiss)
-## brandsma example?
-  
+summary(brandsma %>% select(sch, pup, ssi, ses, iqv, iqp, lpo ))
+
 ```
 
+
+## Multilevel imputation | predictor matrix
+
+* We need to specify a `-2` in the predictor matrix for the cluster variable `school`.
+
+```{r}
+br_sel <- brandsma %>% select(sch, pup, ssi, ses, iqv, iqp, lpo )
+
+pred <- make.predictorMatrix(br_sel)
+pred[, "sch"] <- -2
+pred
+```
+
+## Multilevel imputation | method
+
+```{r}
+library(miceadds)
+# 2 is random slope?
+
+
+```
 
