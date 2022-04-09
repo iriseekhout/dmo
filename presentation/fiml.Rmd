@@ -1,0 +1,139 @@
+---
+title: "Full Information Maximum Likelihood"
+author: "Dr. Iris Eekhout"
+subtitle: "Workshop name"
+date: "`r format(Sys.Date())`"
+output: 
+  ioslides_presentation:
+    logo: Puzzle_zgnb3_m.jpg
+    theme: readable
+    css: eigencssfile.css
+widescreen: true
+always_allow_html: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(mice)
+library(lavaan)
+library(dplyr)
+library(semTools)
+```
+
+## How does it work
+
+* Uses all observed data, so also partly observed rows, to estimate model parameters.
+* Analysis and dealing with missing data, at once
+* Different ways to estimate, for example EM algorithm
+
+
+## FIML in `lavaan` {.smaller}
+
+* In R use `lavaan` package with `missing = "fiml"`.
+
+```{r echo=TRUE}
+model <- '
+  #variance
+  Ozone ~~ Ozone
+  Solar.R ~~ Solar.R
+  Wind ~~ Wind
+  Temp ~~ Temp
+  
+  #correlation
+  Ozone ~~ Solar.R + Wind + Temp
+  Solar.R ~~ Wind + Temp
+  Wind ~~ Temp
+  '
+fit <- sem(model, data = airquality, missing = "fiml", meanstructure = TRUE)
+```
+
+## FIML descriptives {.smaller}
+
+
+```{r}
+summary(fit, standardized = TRUE)
+```
+
+## Output explained
+
+* Intercepts: FIML means
+* Variance: FIML variances
+* Covariances: FIML correlation (because `standardized = TRUE`).
+
+## Missing data patterns
+
+* Missing data patterns in the data
+
+```{r}
+
+inspect(fit, 'patterns') 
+
+```
+
+
+## Missing data proportions
+
+* A symmetric matrix where each element contains the proportion of observed datapoints for the corresponding pair of observed variables.
+
+```{r}
+inspect(fit, 'coverage')
+```
+
+## Linear regression analysis
+
+```{r}
+model <- '
+  Ozone ~ Solar.R 
+  '
+fit_fiml <- sem(model, data = airquality, missing = "fiml")
+summary(fit_fiml)
+```
+
+## Compare with MI
+
+```{r}
+imp_pmm <- mice(airquality %>% select(Ozone, Solar.R), method = "pmm", print = F)
+fit_mi <- with(imp_pmm, lm(Ozone ~ Solar.R))
+pool(fit_mi)
+```
+
+## SEM with auxiliary variables {.smaller}
+
+* Use auxiliary variables to improve missing data handling
+* Auxiliary variables to covariances in the model
+
+```{r}
+model_aux <- '
+  Ozone ~ Solar.R 
+  Solar.R ~~ Wind + Temp + Month + Day
+  Ozone ~~ Wind + Temp + Month + Day
+  Wind ~~ Temp + Month + Day
+  Temp ~~ Month + Day
+  Month ~~ Day
+  '
+auxfit1 <- sem(model = model_aux, missing = "fiml", data = airquality)
+summary(auxfit1)
+```
+
+
+
+## SEM with auxiliary variables {.smaller}
+
+* Easily add auxiliary variables with `semTools` package
+
+```{r}
+aux.vars <- c("Wind", "Temp", "Month","Day")
+auxfit <- sem.auxiliary(model=model, missing = "fiml", aux=aux.vars, fixed.x=FALSE, data=airquality)
+summary(auxfit)
+
+```
+
+
+## Compare with MI 
+
+```{r}
+imp_pmm <- mice(airquality, method = "pmm", print = F)
+fit_mi <- with(imp_pmm, lm(Ozone ~ Solar.R))
+
+pool(fit_mi)
+```

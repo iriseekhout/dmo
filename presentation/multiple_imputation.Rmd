@@ -461,11 +461,36 @@ plot(imp, c("wgt", "gen", "tv"))
   + Analysis
   + Pooling
 
+## Analysis example {.smaller}
+
+```{r}
+imp_pmm <- mice(airquality, method = "pmm", print = F)
+fit <- with(imp_pmm, lm(Ozone ~ Solar.R))
+
+summary(fit)
+
+```
 
 ## Pooling phase
 
 * Pool the analysis results to obtain final parameter estimates.
 * Usual normally distributed parameters: Rubin's Rules
+
+## Pooling example
+
+```{r}
+imp_pmm <- mice(airquality, method = "pmm", print = F)
+fit_mi <- with(imp_pmm, lm(Ozone ~ Solar.R))
+
+pool(fit_mi)
+```
+
+## Pool output
+
+* **riv**: Relative increase in variance due to nonresponse
+* **df** Residual degrees of freedom for hypothesis testing
+* **lambda** Proportion of total variance due to missingness
+* **fmi** Fraction of missing information 
 
 
 ## Rubin's Rules

@@ -39,7 +39,7 @@ GitHub: iriseekhout
 * Missing data methods
 * Missing data in practice
 
-* 2 -day workshop
+* 2-day workshop
 
 
 ## Program | Day 1
@@ -61,7 +61,6 @@ GitHub: iriseekhout
 * Lecture 2: Dealing with missing data (13:00 - 14:00)
 	+ Ad hoc solutions and what's wrong with that?
 	+ Multiple imputation - how does it work
-	+ FIML explanation
 	
 * Software demo: How to perform multiple imputation with MICE (14:00 - 14:30)
 
@@ -74,6 +73,7 @@ GitHub: iriseekhout
 
 * Lecture 3: Missing data in practice
 	+ Missing data in questionnaires
+	+ Multilevel imputation
 	+ Missing data in longitudinal designs
 
 * Practical 3: Missing data in practice (10:00 - 13:00)
