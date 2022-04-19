@@ -26,6 +26,8 @@ wideex <- data.frame(id = 1:50,
            T1 = sample(15:25, 50, replace = T),
            T2 = sample(15:25, 50, replace = T))
 
+longex <- wideex %>% pivot_longer(cols = T0:T2, names_to = "time", values_to = "outcome")
+
 #make missings
 wideexm <- dmo::MCAR(wideex, alpha = 0.25, pattern = matrix(c(1,1,1,1,0,
                                                               1,1,1,0,0,
@@ -33,6 +35,16 @@ wideexm <- dmo::MCAR(wideex, alpha = 0.25, pattern = matrix(c(1,1,1,1,0,
                                                               1,1,0,1,0), byrow = T, ncol = 5), f = c(0.25,0.25,0.25,0.25))
 wideexm <- data.frame(wideexm)
 colnames(wideexm) <- colnames(wideex)
+
+longexm <- wideexm %>% pivot_longer(cols = T0:T2, names_to = "time", values_to = "outcome") 
+
+longexmc <- longexm %>%
+  mutate(cov1 = runif(n()),
+         cov2 = rnorm(n()),
+         cov3 = rnorm(n()))
+
+wideexmc <- longexmc %>%
+  pivot_wider(id_cols = c(id, group), names_from = "time", values_from = c("outcome", "cov1", "cov2", "cov3"))
 ```
 
 ## Repeated measurements data
@@ -79,4 +91,28 @@ longex
 ## Wide data imputation
 
 * Similar to multiple imputation on cross-sectional data
+* Number of variables in imputation model may be a challenge
 
+
+## Example wide imputation
+
+Data set with measurements at three time-points for:
+
+* outcome
+* covariate 1
+* covariate 2
+* covariate 3
+* one group variable
+
+In total: 13 variables in wide imputation.
+
+## Practical solutaion for wide imputation
+
+* Leave out predictors from other time-points
+* Example predictormatrix for outcome 
+
+```{r}
+### change to have covs for T0 to outcome T0 and covs for T1 to uotcome T1 etx.
+wide_pred <- mice::make.predictorMatrix(wideexmc)
+wide_pred[c("outcome_T0", "outcome_T1", "outcome_T2"),]
+```
