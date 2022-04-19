@@ -14,29 +14,69 @@ always_allow_html: yes
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+library(dplyr)
+library(tidyr)
+library(mice)
+
+
+set.seed(28472)
+wideex <- data.frame(id = 1:50,
+           group = rep(c(0,1), 25),
+           T0 = sample(15:25, 50, replace = T),
+           T1 = sample(15:25, 50, replace = T),
+           T2 = sample(15:25, 50, replace = T))
+
+#make missings
+wideexm <- dmo::MCAR(wideex, alpha = 0.25, pattern = matrix(c(1,1,1,1,0,
+                                                              1,1,1,0,0,
+                                                              1,1,1,0,1,
+                                                              1,1,0,1,0), byrow = T, ncol = 5), f = c(0.25,0.25,0.25,0.25))
+wideexm <- data.frame(wideexm)
+colnames(wideexm) <- colnames(wideex)
 ```
 
-## R Markdown
+## Repeated measurements data
 
-This is an R Markdown presentation. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+* In longitudinal studies people are monitored for a longer time period.
+* For example RCT with follow-up
+ + Baseline
+ + Post-treatment
+ + Follow-up
+* Intensive longitudinal data: sensor measurements, daily measures
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
+## Challenges
 
-## Slide with Bullets
+* Repeated measurements are correlated within persons: multilevel structure
+* Measurement time-points some times do not line up
 
-- Bullet 1
-- Bullet 2
-- Bullet 3
+## Data structure
 
-## Slide with R Output
+* Wide data format
+  + One row per person, repeated measurements in the columns
+* Long data format
+  + Multiple rows per person, one column as time-point indicator
+  
+## Wide data format
 
-```{r cars, echo = TRUE}
-summary(cars)
+```{R echo=FALSE}
+wideex
 ```
 
-## Slide with Plot
+## Example long data
 
-```{r pressure}
-plot(pressure)
+```{R}
+longex <- wideex %>% pivot_longer(cols = T0:T2, names_to = "time", values_to = "outcome")
+longex
+ 
 ```
+
+## Missing data in longitudinal designs
+
+* Wide imputation
+* Long imputation: multilevel imputation
+
+
+## Wide data imputation
+
+* Similar to multiple imputation on cross-sectional data
 
