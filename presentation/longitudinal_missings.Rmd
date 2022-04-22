@@ -17,14 +17,18 @@ knitr::opts_chunk$set(echo = FALSE)
 library(dplyr)
 library(tidyr)
 library(mice)
+library(miceadds)
+library(broom.mixed)
+library(lme4)
 
-
-set.seed(28472)
+cov <- matrix(0.8, nrow = 3, ncol = 3)
+diag(cov) <- 1
+set.seed(24672)
+out <- MASS::mvrnorm(n = 50, mu = c(0,1,2), Sigma = cov)
 wideex <- data.frame(id = 1:50,
            group = rep(c(0,1), 25),
-           T0 = sample(15:25, 50, replace = T),
-           T1 = sample(15:25, 50, replace = T),
-           T2 = sample(15:25, 50, replace = T))
+           out) %>%
+  rename(T0 = X1, T1 = X2, T2 = X3)
 
 longex <- wideex %>% pivot_longer(cols = T0:T2, names_to = "time", values_to = "outcome")
 
@@ -37,11 +41,12 @@ wideexm <- data.frame(wideexm)
 colnames(wideexm) <- colnames(wideex)
 
 longexm <- wideexm %>% pivot_longer(cols = T0:T2, names_to = "time", values_to = "outcome") 
-
+rvar <- runif(150)
 longexmc <- longexm %>%
   mutate(cov1 = runif(n()),
          cov2 = rnorm(n()),
-         cov3 = rnorm(n()))
+         cov3 = rnorm(n()),
+         cov1 = ifelse(rvar > 0.75, NA, cov1))
 
 wideexmc <- longexmc %>%
   pivot_wider(id_cols = c(id, group), names_from = "time", values_from = c("outcome", "cov1", "cov2", "cov3"))
@@ -58,6 +63,7 @@ wideexmc <- longexmc %>%
 
 ## Challenges
 
+* Multiple variables at each time-point
 * Repeated measurements are correlated within persons: multilevel structure
 * Measurement time-points some times do not line up
 
@@ -74,7 +80,8 @@ wideexmc <- longexmc %>%
 wideex
 ```
 
-## Example long data
+
+## Long data format
 
 ```{R}
 longex <- wideex %>% pivot_longer(cols = T0:T2, names_to = "time", values_to = "outcome")
@@ -82,7 +89,7 @@ longex
  
 ```
 
-## Missing data in longitudinal designs
+## Missing data imputation
 
 * Wide imputation
 * Long imputation: multilevel imputation
@@ -92,6 +99,7 @@ longex
 
 * Similar to multiple imputation on cross-sectional data
 * Number of variables in imputation model may be a challenge
+* Imputation model ~ analysis model
 
 
 ## Example wide imputation
@@ -106,13 +114,73 @@ Data set with measurements at three time-points for:
 
 In total: 13 variables in wide imputation.
 
-## Practical solutaion for wide imputation
+## Practical solution for wide imputation
 
-* Leave out predictors from other time-points
-* Example predictormatrix for outcome 
+* Leave out covariates from other time-points
+* Example predictormatrix for cov1 
 
 ```{r}
 ### change to have covs for T0 to outcome T0 and covs for T1 to uotcome T1 etx.
 wide_pred <- mice::make.predictorMatrix(wideexmc)
-wide_pred[c("outcome_T0", "outcome_T1", "outcome_T2"),]
+wide_pred["cov1_T0", c("cov2_T1","cov2_T2","cov3_T1","cov3_T2")] <- 0
+wide_pred["cov1_T1", c("cov2_T0","cov2_T2","cov3_T0","cov3_T2")] <- 0
+wide_pred["cov1_T2", c("cov2_T0","cov2_T1","cov3_T0","cov3_T1")] <- 0
+wide_pred[c("cov1_T0", "cov1_T1", "cov1_T2"), 3:14]
 ```
+
+## Imputation of long data
+
+* Multilevel imputation
+* Account for the clustering of measurements within subjects
+
+## Methods for multilevel imputation
+
+* `miceadds` package contains many additional methods
+* `broom.mixed` to enable the `pool` function for the mice output.
+
+## Example long imputation
+
+* Use `-2` for cluster variable `id` in predictormatrix (random intercept)
+* Change method to `2l.pmm`
+
+```{r}
+long_pred <- mice::make.predictorMatrix(longexmc)
+long_pred[c(2:7), "id"] <- (-2)
+ini <- mice(longexmc, m = 1, maxit = 0, pred = long_pred)
+long_meth <- ini$method
+long_meth[c("outcome", "cov1")] <- "2l.pmm"
+long_pred
+long_meth
+
+```
+
+
+## FIML for missing outcomes
+
+* Missings in dependent variable solved in Maximum likelihood estimation
+* * $Outcome = \beta_0 + \beta_1*cov2 + b_{0j} + \epsilon_{ij}$
++ $b_{0j}$ is random intercept at subject level
+* Estimation method optimized model parameter using observed data of dependent variable
+
+*Missing covariate data are handled by listwise deletion*
+
+## Example no imputation
+
+* cov2 has no missing data
+* Outcome variable has missing observations (drop-out)
+
+```{r}
+fit1 <- lme4::lmer(outcome ~ cov2 + (1|id), data = longexmc)
+tidy(fit1, conf.int = T)
+
+```
+
+## Example with imputation
+
+```{r message=FALSE, warning=FALSE}
+mlimp <- mice(longexmc, m = 5, maxit = 10, method = long_meth, pred = long_pred, print = F, seed = 899)
+fitmi <- with(mlimp, lmer(outcome ~ cov2 + (1|id)))
+pool(fitmi)
+
+```
+

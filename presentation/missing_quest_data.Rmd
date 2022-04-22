@@ -24,13 +24,108 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Summarizing item scores
 
+* CTT: sum score or mean score
 * Latent variable obtained via Item Response model (e.g. Rasch model or 2 parameter logistic model)
 * Latent variable measured in a structural equation model
 
+## Advice in user manuals
+
+* User manuals often have a statement about dealing with missing items scores
+* This method is not always evidence-based
+* Example: 
+
+## Person mean imputation
+
+* Single imputation of mean over the observed items (within person)
+* Same as average over the available items
+* Best ad hoc single imputation method available
+* Disadvantages of single imputation: no imputation uncertainty
+* Works best when correlation between items is higher
+
+## Multiple imputation in multi-item questionnaires
+
+* Imputing item scores versus imputing total scores
+
+
+## Advised strategy for imputation
+
+* When there are item scores observed, use item level imputation
+* When only few item scores or none, use total score imputation
+* Combine both strategies
+
+## Challenges in multi-item questionnaire missings
+
+* Imputation model can grow large when all items are used
+* When the total score is used in analyses, the total score should be used as predictor for other variables
+
+## Solutions 
+
+*Imputation model can grow large when all items are used*
+
+* Isolate item imputation per questionnaire or subscale via prediction matrix
+* Especially relevant in longitudinal data
+
+*When the total score is used in analyses, the total score should be used as predictor for other variables*
+
+* Update total score after each iteration by using **passive imputation**.
+
+## Illustrations
+
+```{r}
+
+Data are generated for 100 subjects. Each subjects has observations for 5 questionnaires and 3 covariates.
+
+#generate questionnaire data
+k <- c(5,5,5)
+nq <- 3
+x <- dmo::gen_qdata(n=100, k= k, likert = T)
+
+#generate covariate data
+cov <- MASS::mvrnorm(n=100, mu=c(5,5,5), Sigma=matrix(c(10,1,1,1,10,1,1,1,10),3,3))
+colnames(cov) <- c("cov1", "cov2", "cov3")
+
+#combine in data.frame
+x1 <- data.frame(bind_cols(x,cov))
+
+alpha <- 0.25
+
+#regerate 2 random patterns for missing item data
+pattern <- matrix(c(sample(c(0,1), size=2*sum(k),replace = TRUE)),nrow=2)
+pattern <- cbind(pattern, matrix(c(1,1,1,1,1,1),nrow=2))
+pattern
+
+#apply each pattern with equal frequency and equal odds
+f <- c(0.5,0.5)
+g <- c(4,4)
+
+#generate missings in the data
+x <- MAR(x1,alpha,pattern,f,g)
+colnames(x) <- colnames(x1)
+
+head(x, 15)
+ts <- dmo::calculate_ts(x, k= c(5,5,5))
+data <- data.frame(x,ts)
+
+```
+
+
+* Isolate item imputation per questionnaire or subscale
+
+```{r}
+predQ <- make.predictorMatrix(data)
+predQ[]
+
+```
+
 ## Missing data in IRT models
+
+* Some of the estimation methods for IRT methods deal with missing values by MAR assumption
+* For example maximum likelihood estimation
 
 
 ## Missing data in SEM models
 
 * Full Information Maximum Likelihood estimation
 * In `R` the `lavaan` package - simulates Mplus
+
+
