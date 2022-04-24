@@ -1,12 +1,16 @@
 ---
 title: "Missing value analysis"
+subtitle: "Workshop name"
 author: "Dr. Iris Eekhout"
 date: "`r format(Sys.Date())`"
-output: ioslides_presentation
+output: 
+  ioslides_presentation:
+    logo: Puzzle_zgnb3_m.jpg
+    theme: readable
+    css: eigencssfile.css
 widescreen: true
 always_allow_html: yes
 ---
-
 ## What are missing values
 
 Missing observations are defined as `NA` in R. 
@@ -22,8 +26,8 @@ Missing data can have different implications for data summaries, analyses and co
 ## Example data {.smaller}
 
 <!--A data example is used to demonstrate the methods to explore missing values. 
-The example data has 25 rows and 5 columns. -->
-
+. -->
+The example data has 25 rows and 5 columns.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 #example data 
@@ -37,19 +41,22 @@ diag(cov) <- 1
 dat <- MASS::mvrnorm(n = 25, rep(0,5), Sigma = cov)
 
 patterns <- matrix(c(0,1,1,0,0,
-                     1,0,1,1,0), nrow = 2)
+                     1,0,1,1,0), nrow = 2, byrow = T)
 set.seed(23421)
 datm <- dmo::MCAR(data.frame(dat), alpha = 0.50, pattern = patterns, f = c(0.5, 0.5))
-datm
+```
+
+```{r echo = TRUE}
+head(datm, 15)
 ```
 
 
-## Matrix perspective
+## Matrix perspective {.smaller}
 
 
 **Matrix perspective:** the number of missing entries in the data matrix. 
 
-The `is.na` function returns `TRUE` if a cell is missing (`NA`) and `FALSE` is a cell is observed.
+The `is.na` function returns `TRUE` if a cell is missing (`NA`) and `FALSE` if a cell is observed.
 
 In the example there are `r sum(is.na(datm))` missing data entries. The data frame contains 5 variables for 25 subjects, which makes a total of 125 data entries. So, `r sum(is.na(datm))/length(is.na(datm)) *100`% of the data entries are missing.  
 
@@ -66,7 +73,7 @@ sum(is.na(datm))/length(is.na(datm))
 
 **Variables perspective:** the number of missing values per variable.
 
-For each variable we can count the number of missing observations (n) and calculate the proportion (p).
+For each variable we can count the number of missing observations (*n*) and calculate the proportion (*p*).
 
 
 ```{R}
@@ -108,22 +115,21 @@ datm %>%
 ## Case perspective - `mice` {.smaller}
 
 
-The `cci` function in the `mice` package creates and indicator for the number of fully observed rows. 
+* `cci`: create an indicator for the number of fully observed rows. 
 
 ```{r}
-
 mice::cci(datm)
-
 ```
 
-The `nic` function in the `mice` package counts the number of incomplete cases, i.e. cases with missing values. 
+* `nic`: count the number of incomplete cases, i.e. cases with missing values. 
 
 ```{R}
 
 mice::nic(datm)
 ```
 
-The `ncc` function in the `mice` package counts the number of complete cases, i.e. cases full fully observed rows.
+* `ncc`: count the number of complete cases, i.e. cases full fully observed rows.
+
 ```{R}
 mice::ncc(datm)
 ```
@@ -132,20 +138,20 @@ mice::ncc(datm)
 ## Missing data patterns {.smaller}
 
 
-**Missing data pattern**: the combination of observed an unobserved values that occur together in a row. 
+**Missing data pattern**: the combination of observed and unobserved values that occur together in a row. 
 Generally notated as having a 0 for a missing value and a 1 for an observed value. 
 
 Data often contains multiple different missing data patterns. The example shows three missing data patterns:
 
 1. All variables are observed, so a row of only ones. 
-2. Three variables observed ant two missing.
-3. Three missing values and two observed. 
+2. Three variables observed and two missing.
+3. Two variables observed and three missing. 
 
 ```{r}
 mice::md.pattern(datm, plot= F)
 ``` 
 
-*row-names: the number of times the pattern occurs in the data; last column; the number missing values the missing data pattern holds.* 
+*row-names: the number of times the pattern occurs in the data; last column: the number missing values the missing data pattern holds.* 
 
 
 ## Missing data pairs {.smaller}
@@ -153,7 +159,7 @@ mice::md.pattern(datm, plot= F)
 
 **Missing data pair:** the number of times two variables are either missing together or observed together.
 
-How many cases we can actually use for *imputation*.  The `md.pair` function from the `mice` package shows four matrices. Each matrix gives us information about combinations of missing values in our data. 
+How many cases we can actually use for *imputation*.  The `md.pair` function from the `mice` package returns four matrices. Each matrix gives us information about combinations of missing values in our data. 
 
 - **response-response (`rr`)** the count of how often two variables are both observed.
 - **response-missing (`rm`)** the count of how often the row-variable is observed and the column-variable is missing.
@@ -168,6 +174,7 @@ pat <- mice::md.pairs(datm)
 
 ## Response-response
 
+Observed value counts.
 
 ```{r}
 pat$rr
@@ -175,6 +182,7 @@ pat$rr
 
 ## Response-missing
 
+Missing value counts when rows are observed.
 
 ```{r}
 pat$rm
@@ -182,12 +190,15 @@ pat$rm
 
 ## Missing-response
 
+Missing value counts when columns are observed.
 
 ```{r}
 pat$mr
 ```
 
 ## Missing-missing
+
+Missing value counts.
 
 ```{r}
 pat$mm
@@ -205,12 +216,16 @@ round(100 * pat$mr / (pat$mr + pat$mm))
 
 ```
 
+*X3 has no missing values*
+
+<!----
 ## Types of missing data
 
 In research, missing data occur when a data value is unavailable. Many empirical studies encounter missing data. Missing data can occur in many stages of research due to many different causes in many different forms. 
 
 - *Non-response*: an invited respondent does not participate in the study.
-- *Intermittend missing data*: missing data on one or more of the measured variables that are used as a predictor, covariate or outcome.
+- *Intermittent missing data*: missing data on one or more of the measured variables that are used as a predictor, covariate or outcome.
 - *drop-out* or *loss to follow-up*: participants in a longitudinal study do not show up at one or more repeated measurement occasions.
 
 Each type of missing data may have different reasons, and also different implication for the methods to deal with the missing data. 
+-->

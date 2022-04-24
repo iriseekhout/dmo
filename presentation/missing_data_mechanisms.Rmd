@@ -5,7 +5,9 @@ author: "Dr. Iris Eekhout"
 date: "`r format(Sys.Date())`"
 output: 
   ioslides_presentation:
-    logo: websitelogo.jpg
+    logo: Puzzle_zgnb3_m.jpg
+    theme: readable
+    css: eigencssfile.css
 widescreen: true
 always_allow_html: yes
 ---
@@ -35,7 +37,7 @@ theme_set(theme_light())
 In research, missing data occur when a data value is unavailable. Many empirical studies encounter missing data. Missing data can occur in many stages of research due to many different causes in many different forms. 
 
 - *Non-response*: an invited respondent does not participate in the study.
-- *Intermittend missing data*: missing data on one or more of the measured variables that are used as a predictor, covariate or outcome.
+- *Intermittent missing data*: missing data on one or more of the measured variables that are used as a predictor, covariate or outcome.
 - *drop-out* or *loss to follow-up*: participants in a longitudinal study do not show up at one or more repeated measurement occasions.
 
 Each type of missing data may have different reasons, and also different implication for the methods to deal with the missing data.
@@ -43,7 +45,7 @@ Each type of missing data may have different reasons, and also different implica
 
 ## Missing data mechanisms
 
-The underlying cause of missing data and were first described by Rubin (1976). 
+The underlying causes of missing data as *missing data mechanisms* and were first described by Rubin (1976). 
 
 Rubin distinguished three missing data mechanisms:
 
@@ -56,7 +58,9 @@ Rubin distinguished three missing data mechanisms:
 Missing data are MCAR when the probability of missing data on a variable is unrelated to any other measured variable and is unrelated to the variable with missing values itself. 
 
 In other words the missingness on the variable is completely unsystematic. 
+----
 
+![picture of spaghetti](images/spaghetti.jpg)
 
 ## Complete data example {.smaller}
 
