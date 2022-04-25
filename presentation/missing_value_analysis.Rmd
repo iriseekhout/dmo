@@ -11,11 +11,18 @@ output:
 widescreen: true
 always_allow_html: yes
 ---
+
+# Missing value analysis {data-background=Puzzle_zgnb3.jpg data-background-size=cover}
+  
 ## What are missing values
 
 Missing observations are defined as `NA` in R. 
 
 Missing data can have different implications for data summaries, analyses and conclusions based on the data with missing values. 
+
+
+<img src="images/Wavy_Bus-09_Single-06.jpg" height="400px" />
+
 
 ## Amount of missing data
 

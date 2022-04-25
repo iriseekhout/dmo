@@ -58,9 +58,10 @@ Rubin distinguished three missing data mechanisms:
 Missing data are MCAR when the probability of missing data on a variable is unrelated to any other measured variable and is unrelated to the variable with missing values itself. 
 
 In other words the missingness on the variable is completely unsystematic. 
-----
 
-![picture of spaghetti](images/spaghetti.jpg)
+<br>
+<center><img src="images/mailman.jpg" height="270px" /></center>
+
 
 ## Complete data example {.smaller}
 
@@ -118,8 +119,10 @@ ggplot(data = mcarbox, aes(x = R1, y = value)) +
 
 Missing data are MAR when the probability of missing data on a variable is related to some other measured variable in the model, but not to the value of the variable with missing values itself.
 
-For example, only younger people have missing values for IQ. In that case the probability of missing data on IQ is related to age. 
+For example, older people more often have missing values for IQ. In that case the probability of missing data on IQ is related to age. 
 
+<br>
+<center><img src="images/577.jpg" height="270px" /></center>
 
 ## Complete data example {.smaller}
 
@@ -178,7 +181,11 @@ The difference between the group with missing values (TRUE) and the group withou
 
 Data are MNAR when the missing values on a variable are related to the values of that variable itself, even after controlling for other variables. 
 
-For example, when data are missing on IQ and only the people with low IQ values have missing observations for this variable. 
+For example, when weight data are missing mostly for the more heavy persons.
+
+<br>
+<center><img src="images/40779.jpg" height="270px" /></center>
+
 
 ## Complete data example {.smaller}
 
@@ -367,7 +374,7 @@ The results of the logistic regression analysis show if the independent variable
 *Note that when the other variables have missing values as well, a complete-case analysis is used per default.* 
 
 
-## Logistic regression MCAR
+## Logistic regression MCAR {.smaller}
 
 *MCAR example*
 ```{R}
@@ -376,7 +383,7 @@ glm(R1 ~ X2 + X3, data = mcar) %>%
 
 ``` 
 
-## Logistic regression MAR
+## Logistic regression MAR {.smaller}
 
 *MAR example*
 ```{R}
@@ -385,7 +392,7 @@ glm(R1 ~ X2 + X3, data = mar) %>%
 
 ``` 
 
-## Logistic regression MNAR
+## Logistic regression MNAR {.smaller}
 
 *MNAR example*
 ```{R}
@@ -395,14 +402,22 @@ glm(R1 ~ X2 + X3, data = mnar) %>%
 
 ## Logistic regression
 
-In the MCAR example both `X2` and `X3` are not related to the probability of missing data in `X1`, so we may assume that the missing data in `X1` are MCAR. However, in the MAR example, both variables are related tot he probability of missing data in `X1`, so in that case we can assume that the data are not-MCAR. 
+In the MCAR example both `X2` and `X3` are not related to the probability of missing data in `X1`, so we may assume that the missing data in `X1` are MCAR. 
+
+However, in the MAR example, both variables are related tot he probability of missing data in `X1`, so in that case we can assume that the data are not-MCAR. 
 
 We cannot rule-out MNAR in this situation, since cannot test the missing values itself. 
 
 
 ## Little's MCAR test
 
-A multivariate test that evaluates the subgroups of the data that share the same missing data pattern. For these subgroups the observed means are compared to the estimated means based on the expectation-maximization algorithm. A chi-square distribution test is used to test the null hypothesis that the data are MCAR. A significant result shows that the data are not-MCAR.  
+* A multivariate test that evaluates the subgroups of the data that share the same missing data pattern. 
+
+* Per subgroup (with same missing data pattern): observed means versus estimated means based on the expectation-maximization algorithm. 
+
+* Chi-square distribution test to test the null hypothesis that data are MCAR.
+
+* A significant result shows that the data are not-MCAR.  
 
 
 ## Little's MCAR test MCAR
@@ -429,7 +444,11 @@ misty::na.test(mnar %>% select(X1:X3))
 
 ## Little's MCAR test notes
 
-Using Little's MCAR test does not provide specific information about which variables are related to the probability of missing data. Also, the test assumes multivariate normality and can only be applied to continuous variables. And the MNAR mechanism can never be ruled out, regardless of the result of the test. 
+* No specific information about which variables are related to the probability of missing data. 
+
+* Test assumes multivariate normality and can only be applied to continuous variables.
+
+* The MNAR mechanism can never be ruled out, regardless of the result of the test. 
 
 
 
@@ -492,7 +511,8 @@ The methods to deal with missing data, implicitly assume a missing data mechanis
 **MAR**: less strict assumption. Most advanced missing data methods assume this mechanism (e.g. multiple imputation, FIML). 
 
 * Include variables in study that may explain the missing data, a MAR assumption may become more plausible (as compared to MNAR). 
-* These auxiliary variables may also help in dealing with the missing data. Auxiliary variables are variables related to the probability of missing data or to the variable with missing data. These variables can be used as predictors in an imputation model or as covariates in a FIML model to improve estimations.
+* These auxiliary variables may also help in dealing with the missing data. 
+* Auxiliary variables: variables related to the probability of missing data or to the variable with missing data. Can be used as predictors in an imputation model or as covariates in a FIML model to improve estimations.
 
 
 ## Assuming the missing data mechanism (MNAR) {.build}

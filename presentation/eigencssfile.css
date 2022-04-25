@@ -44,3 +44,15 @@ slides > slide:not(.nobackground):before {
 pre.prettyprint {
   background-color: #f8f8f8 !important;
 }
+
+
+slides > slide.backdrop {
+  background: white;
+}
+
+
+.section .reveal h1,
+.section .reveal h2,
+.section .reveal p {
+  color: blue;
+}
