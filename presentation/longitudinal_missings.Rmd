@@ -52,6 +52,8 @@ wideexmc <- longexmc %>%
   pivot_wider(id_cols = c(id, group), names_from = "time", values_from = c("outcome", "cov1", "cov2", "cov3"))
 ```
 
+# Longitudinal missing data {data-background=Puzzle_zgnb3.jpg data-background-size=cover}
+
 ## Repeated measurements data
 
 * In longitudinal studies people are monitored for a longer time period.

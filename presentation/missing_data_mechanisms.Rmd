@@ -32,6 +32,8 @@ theme_set(theme_light())
 ```
 
 
+# Missing data mechanisms {data-background=Puzzle_zgnb3.jpg data-background-size=cover}
+
 ## Types of missing data {.build}
 
 In research, missing data occur when a data value is unavailable. Many empirical studies encounter missing data. Missing data can occur in many stages of research due to many different causes in many different forms. 
@@ -243,13 +245,16 @@ ggplot(data = mnarbox, aes(x = R1, y = value)) +
 The difference between the group with missing values (TRUE) and the group without missing values (FALSE) shows that having missing data is related to the scores on the other variables. 
 
 
-# Evaluate the missing data mechanism
+# Evaluate the missing data mechanism {data-background=Puzzle_zgnb3.jpg data-background-size=cover}
 
 ## Reason for missing data
 
 Any information about the research process can provide valuable information that helps to evaluate and make assumptions about the missing data mechanism. 
 
 Why are data missing?
+
+<br>
+<center><img src="images/3156627.jpg" height="270px" /></center>
 
 
 ## Missing data mechanisms
@@ -291,25 +296,22 @@ Independent samples T-test to compare the mean of *continuous* variables between
 
 Note that the T-test assumes normally distributed data and homogeneity of variance.
 
-## T-test MCAR
+## T-test | MCAR example
 
-*MCAR example*
 ```{R}
 t.test(X2 ~ R1, data = mcar)
 
 ```
 
-## T-test MAR
+## T-test | MAR example
 
-*MAR example*
 ```{R}
 t.test(X2 ~ R1, data = mar)
 
 ```
 
-## T-test MNAR
+## T-test | MNAR example
 
-*MNAR example*
 ```{R}
 t.test(X2 ~ R1, data = mnar)
 
@@ -333,9 +335,8 @@ Test to compare the distribution over the categories between the groups.
 
 Note that the Chi-square test assumes that the expected cell frequencies should not be too small.
 
-## Chi-square MCAR
+## Chi-square | MCAR example
 
-*MCAR example*
 ```{R}
 mcar <- mcar %>% mutate(X3c = ifelse(X3 > 0, 1, 0))
 chisq.test(mcar$R1, mcar$X3c)
@@ -343,9 +344,8 @@ chisq.test(mcar$R1, mcar$X3c)
 ```
 
 
-## Chi-square MAR
+## Chi-square | MAR example
 
-*MAR example*
 ```{R}
 mar <- mar %>% mutate(X3c = ifelse(X3 > 0, 1, 0))
 chisq.test(mar$R1, mar$X3c)
@@ -353,9 +353,8 @@ chisq.test(mar$R1, mar$X3c)
 ```
 
 
-## Chi-square MNAR
+## Chi-square | MNAR example
 
-*MNAR example*
 ```{R}
 mnar <- mar %>% mutate(X3c = ifelse(X3 > 0, 1, 0))
 chisq.test(mar$R1, mnar$X3c)
@@ -374,30 +373,27 @@ The results of the logistic regression analysis show if the independent variable
 *Note that when the other variables have missing values as well, a complete-case analysis is used per default.* 
 
 
-## Logistic regression MCAR {.smaller}
+## Logistic regression | MCAR example
 
-*MCAR example*
 ```{R}
 glm(R1 ~ X2 + X3, data = mcar) %>%
-  summary
+  summary %>% coefficients %>% round(.,3)
 
 ``` 
 
-## Logistic regression MAR {.smaller}
+## Logistic regression| MAR example
 
-*MAR example*
 ```{R}
 glm(R1 ~ X2 + X3, data = mar) %>%
-  summary
+  summary %>% coefficients %>% round(.,3)
 
 ``` 
 
-## Logistic regression MNAR {.smaller}
+## Logistic regression | MNAR example 
 
-*MNAR example*
 ```{R}
 glm(R1 ~ X2 + X3, data = mnar) %>%
-  summary
+  summary %>% coefficients %>% round(.,3)
 ```
 
 ## Logistic regression
@@ -420,23 +416,20 @@ We cannot rule-out MNAR in this situation, since cannot test the missing values 
 * A significant result shows that the data are not-MCAR.  
 
 
-## Little's MCAR test MCAR
+## Little's MCAR test | MCAR example
 
-*MCAR example*
 ```{R}
 misty::na.test(mcar %>% select(X1:X3))
 ```
 
-## Little's MCAR test MAR
+## Little's MCAR test | MAR example
 
-*MAR example*
 ```{R}
 misty::na.test(mar %>% select(X1:X3))
 ```
 
-## Little's MCAR test MNAR
+## Little's MCAR test | MNAR example
 
-*MNAR example*
 ```{R }
 misty::na.test(mnar %>% select(X1:X3))
 ```

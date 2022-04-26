@@ -20,6 +20,8 @@ library(dplyr)
 library(semTools)
 ```
 
+# Full Information Maximum Likelihood {data-background=Puzzle_zgnb3.jpg data-background-size=cover}
+
 ## How does it work
 
 * Uses all observed data, so also partly observed rows, to estimate model parameters.

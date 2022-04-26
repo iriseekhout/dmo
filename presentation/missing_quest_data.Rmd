@@ -14,6 +14,8 @@ always_allow_html: yes
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+library(dplyr)
+library(dmo)
 ```
 
 ## multi-item questionnaires
@@ -76,20 +78,20 @@ knitr::opts_chunk$set(echo = FALSE)
 #generate questionnaire data
 k <- c(5,5,5)
 nq <- 3
-x <- dmo::gen_qdata(n=100, k= k, likert = T)
+x <- dmo::gen_qdata(n=100, k= k, nq = 3, likert = T)
 
 #generate covariate data
 cov <- MASS::mvrnorm(n=100, mu=c(5,5,5), Sigma=matrix(c(10,1,1,1,10,1,1,1,10),3,3))
 colnames(cov) <- c("cov1", "cov2", "cov3")
 
 #combine in data.frame
-x1 <- data.frame(bind_cols(x,cov))
+x1 <- data.frame(cbind(x,cov))
 
 alpha <- 0.25
 
 #regerate 2 random patterns for missing item data
 pattern <- matrix(c(sample(c(0,1), size=2*sum(k),replace = TRUE)),nrow=2)
-pattern <- cbind(pattern, matrix(c(1,1,1,1,1,1),nrow=2))
+pattern <- cbind(pattern, matrix(c(1,1,1,1,1,1),nrow=2, byrow = T))
 pattern
 
 #apply each pattern with equal frequency and equal odds
@@ -97,7 +99,7 @@ f <- c(0.5,0.5)
 g <- c(4,4)
 
 #generate missings in the data
-x <- MAR(x1,alpha,pattern,f,g)
+x <- MAR(x1,alpha = alpha ,pattern = pattern, f = f ,g = g)
 colnames(x) <- colnames(x1)
 
 head(x, 15)

@@ -25,21 +25,35 @@ library(kableExtra)
 theme_set(theme_light())
 
 ```
-## Assuming the missing data mechanism {.smaller .build}
 
-Methods to deal with missing data, implicitly assume a missing data mechanism. 
+# Missing data mechanisms (recap) {data-background=Puzzle_zgnb3.jpg data-background-size=cover}
 
-MCAR: the most strict assumption. In practice it is also easiest to deal with MCAR data. 
-1. analyze the observed sample only (this will result in unbiased estimates)
-2. use a random imputation method to boost the power the the amount of missing data is too large. (Best to use multiple imputation or stochastic regression imputation to retain the covariance structure of the data). 
+## Assuming the missing data mechanism (MCAR) 
 
-MAR: less strict assumption. Most advanced missing data methods assume this mechanism (e.g. multiple imputation, FIML). 
-Include variables in study that may explain the missing data, a MAR assumption may become more plausible (as compared to MNAR). 
+The methods to deal with missing data, implicitly assume a missing data mechanism. 
 
-These auxiliary variables may also help in dealing with the missing data. Auxiliary variables are variables related to the probability of missing data or to the variable with missing data. These variables can be used as predictors in an imputation model or as covariates in a FIML model to improve estimations.
+**MCAR**: the most strict assumption. In practice it is also easiest to deal with MCAR data. 
 
-MNAR: least strict assumption. MNAR data are also referred to as non-ignorable, because these cannot be ignored without causing bias in results. MNAR data are more challenging to deal with. 
+1. Analyze the observed sample only (this will result in unbiased estimates).
+2. Use an imputation method to boost the power the the amount of missing data is too large. 
 
+
+## Assuming the missing data mechanism (MAR) 
+
+**MAR**: less strict assumption. Most advanced missing data methods assume this mechanism (e.g. multiple imputation, FIML). 
+
+* Include variables in study that may explain the missing data, a MAR assumption may become more plausible (as compared to MNAR). 
+* These auxiliary variables may also help in dealing with the missing data. 
+* Auxiliary variables: variables related to the probability of missing data or to the variable with missing data. Can be used as predictors in an imputation model or as covariates in a FIML model to improve estimations.
+
+
+## Assuming the missing data mechanism (MNAR) 
+
+**MNAR**: least strict assumption. 
+
+* MNAR data are also referred to as non-ignorable, because these cannot be ignored without causing bias in results. MNAR data are more challenging to deal with. 
+
+# Ad hoc missing data methods {data-background=Puzzle_zgnb3.jpg data-background-size=cover}
 
 ## Complete-case analysis
 
@@ -129,6 +143,7 @@ Other examples:
 ## Example data
 
 ```{r echo=FALSE}
+load("~/GitHub/dmo/data/perform.rda")
 perform %>% group_by(gender) %>% summarise(n = n(),
                                            "wgt n" = sum(!is.na(weight)),
                                            "wgt mean" = mean(weight, na.rm = TRUE),
@@ -136,7 +151,7 @@ perform %>% group_by(gender) %>% summarise(n = n(),
                                            "prf n" =sum(!is.na(performance)),
                                            "prf mean" = mean(performance, na.rm = TRUE), 
                                            "prf sd" = sd(performance, na.rm = TRUE)) %>%
-  kable()
+  kable(digits = 3) %>% kable_styling()
 
 ggplot(perform, aes(x = weight, y = performance, group = gender, color = gender)) +
   geom_point()
@@ -254,6 +269,8 @@ Assumes that people that drop out of the study remain stable.
 * Missing data occurs at the measurements after the baseline, due to study drop-out.
 
 ```{R echo=FALSE}
+load("~/GitHub/dmo/data/weightloss.rda")
+
 mice::md.pattern(weightloss %>% pivot_wider(id_cols = c(id, group), names_from = month, values_from = weight))
 
 ```

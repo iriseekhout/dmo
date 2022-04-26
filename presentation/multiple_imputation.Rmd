@@ -23,7 +23,9 @@ library(dplyr)
 theme_set(theme_light())
 ```
 
-## Multiple imputation method
+# Multiple imputation {data-background=Puzzle_zgnb3.jpg data-background-size=cover}
+
+## Multiple imputation idea
 
 * Imputing the missing data entries with multiple "plausible" values.
 * Takes imputation uncertainty into account
@@ -51,6 +53,191 @@ theme_set(theme_light())
   + method to estimate imputed values
   + predictors used in the model
   
+
+## Algorithm for imputations
+
+* Fully Conditional Specification (FCS): imputes variable-by-variable.
+* For each variable the imputation model can be different:
+  + method
+  + predictors
+
+* Joint modelling: imputes from a multivariate distribution
+
+
+## General method 
+
+* Impute missing value by using the predicted value estimated from observed data.
+* Add residual error to simulate sampling error
+* Depending on the variable type that needs to be imputed, the imputation method is defined.
+
+> Later more on methods
+
+
+## Predictors for imputation
+
+Imputation model 
+* For each variable, the most relevant predictors can be indicated
+* Use variables that are in the analysis model also in the imputation model (compatibility)
+* Add *auxiliary variables* 
+* Advice to use no more than 25 predictors (also depends on sample size)
+
+*Auxiliary variables*: variables related to the probability of missing data or to the variable with missing data.
+
+
+## Iterations
+
+* One iteration, consists of one cycle through all variables that need to be imputed. 
+  + The algorithm starts with a random draw from the observed data.
+  + Then imputes the incomplete data in a variable-by-variable fashion.
+* Typically 5 to 10 iterations before an imputed dataset is generated.
+* Iterations are repeated to ensure convergence of the algorithm
+
+
+## Iteration plot
+
+* To check the convergence of the algorithm
+
+```{r}
+imp <- mice(airquality, maxit = 10, print = F)
+plot(imp)
+
+```
+
+## Iteration plot
+
+* Use additional iterations when in doubt if convergence is reached
+
+```{r}
+imp <- mice(airquality, maxit = 25, print = F)
+plot(imp)
+
+```
+
+
+## Iteration plot
+
+* Convergence may need more iterations
+
+```{r, cache = T}
+imp <- mice(boys, print = F)
+plot(imp, c("wgt", "gen", "tv"))
+
+```
+
+## Iteration plot
+
+* Looks better for gen and tv, but there seems to be a problem for wgt. 
+
+```{r, cache = T}
+imp <- mice(boys, maxit = 25, print = F)
+plot(imp, c("wgt", "gen", "tv"))
+
+```
+
+## Adapting imputation model
+
+* Changes in imputation model may be needed when:
+ + Two variables are highly correlated (multi-collinearity)
+ + A variable with so many missings that the imputations are unstable
+
+
+## Number of imputations
+
+* Theoretically, higher $m$ is better. 
+* Usually, use $m = 5$ for model building and $m ~ % missing data$ for final analysis. 
+* In lower $m$ the between-imputation-variance is enlarged by $1/m$ before computing the total variance.
+
+
+## Analysis phase
+
+* Each imputed dataset is analyzed, with the substantive analysis model
+* This results in $m$ sets of results
+
+* Workflow:
+  + Imputation
+  + Analysis
+  + Pooling
+
+## Analysis example {.smaller}
+
+```{r}
+imp_pmm <- mice(airquality, method = "pmm", print = F)
+fit <- with(imp_pmm, lm(Ozone ~ Solar.R))
+
+summary(fit)
+
+```
+
+## Pooling phase
+
+* Pool the analysis results to obtain final parameter estimates.
+* Usual normally distributed parameters: Rubin's Rules
+
+## Pooling example
+
+```{r}
+imp_pmm <- mice(airquality, method = "pmm", print = F)
+fit_mi <- with(imp_pmm, lm(Ozone ~ Solar.R))
+
+pool(fit_mi)
+```
+
+## Pool output
+
+* **riv**: Relative increase in variance due to nonresponse
+* **df** Residual degrees of freedom for hypothesis testing
+* **lambda** Proportion of total variance due to missingness
+* **fmi** Fraction of missing information 
+
+
+## Rubin's Rules
+
+* Pooling of point estimates that are normally distributed over the imputed datasets. 
+* Means, standard deviations, regression estimates, linear predictors, proportions.
+* For pooling point estimates, use mean:
+
+  > $\hat\theta = \sum^m_{i=1}{\theta_i}$
+
+* Pooling of variance or standard error around the estimate, combine the within and between imputation variance.
+
+## Variance pooling Rubins Rules
+
+
+* Between variance:
+
+  > $\sigma^2_{between} = \frac{\sum^m_{i=1}(\beta_i - \overline\beta)^2}{m-1}$
+
+* Within variance:
+  
+  > $\sigma^2_{within} = \frac{\sum^m_{i=1}\sigma^2_i}{m}$
+
+
+
+* **Total variance:** 
+
+  > $\sigma^2_{total} = \sigma^2_{within} + \sigma^2_{between} + \frac{\sigma^2_{between}}{m}$
+
+
+## Pooling of non-normal parameters
+
+* Use a transformation to approximate a normal distribution
+* Examples:
+  + Correlation: Fisher $z$
+  + Odds Ratio, Relative Risk, Hazard ratio: log transformation
+  + Explained variance: Fisher $z$ for $\sqrt{R^2}$
+  
+  
+
+# Imputation methods {data-background=Puzzle_zgnb3.jpg data-background-size=cover}
+
+
+## Multiple imputation process
+
+* Imputation phase
+* Analysis phase
+* Pooling phase
+
+In the imputation phase, imputed values are estimated using an *imputation method*.
 
 ## Methods for continuous variables
 
@@ -382,153 +569,4 @@ imp_rf <- mice(airquality, method = "cart", print = F)
 xyplot(imp_rf, Ozone ~ Solar.R)
 ```
 
-
-## Algorithm for imputations
-
-* Fully Conditional Specification (FCS): imputes variable-by-variable.
-* For each variable the imputation model can be different:
-  + method
-  + predictors
-
-* Joint modelling: imputes from a multivariate distribution
-
-
-## Iterations
-
-* One iteration, consists of one cycle through all variables that need to be imputed. 
-  + The algorithm starts with a random draw from the observed data.
-  + Then imputes the incomplete data in a variable-by-variable fashion.
-* Typically 5 to 10 iterations before an imputed dataset is generated.
-* Iterations are repeated to ensure convergence of the algorithm
-
-
-## Iteration plot
-
-* To check the convergence of the algorithm
-
-```{r}
-imp <- mice(airquality, maxit = 10, print = F)
-plot(imp)
-
-```
-
-## Iteration plot
-
-* Use additional iterations when in doubt if convergence is reached
-
-```{r}
-imp <- mice(airquality, maxit = 25, print = F)
-plot(imp)
-
-```
-
-
-## Iteration plot
-
-* Convergence may need more iterations
-
-```{r, cache = T}
-imp <- mice(boys, print = F)
-plot(imp, c("wgt", "gen", "tv"))
-
-```
-
-## Iteration plot
-
-* Looks better for gen and tv, but there seems to be a problem for wgt. 
-
-```{r, cache = T}
-imp <- mice(boys, maxit = 25, print = F)
-plot(imp, c("wgt", "gen", "tv"))
-
-```
-
-
-## Number of imputations
-
-* Theoretically, higher $m$ is better. 
-* Usually, use $m = 5$ for model building and $m ~ % missing data$ for final analysis. 
-* In lower $m$ the between-imputation-variance is enlarged by $1/m$ before computing the total variance.
-
-
-## Analysis phase
-
-* Each imputed dataset is analyzed, with the substantive analysis model
-* This results in $m$ sets of results
-
-* Workflow:
-  + Imputation
-  + Analysis
-  + Pooling
-
-## Analysis example {.smaller}
-
-```{r}
-imp_pmm <- mice(airquality, method = "pmm", print = F)
-fit <- with(imp_pmm, lm(Ozone ~ Solar.R))
-
-summary(fit)
-
-```
-
-## Pooling phase
-
-* Pool the analysis results to obtain final parameter estimates.
-* Usual normally distributed parameters: Rubin's Rules
-
-## Pooling example
-
-```{r}
-imp_pmm <- mice(airquality, method = "pmm", print = F)
-fit_mi <- with(imp_pmm, lm(Ozone ~ Solar.R))
-
-pool(fit_mi)
-```
-
-## Pool output
-
-* **riv**: Relative increase in variance due to nonresponse
-* **df** Residual degrees of freedom for hypothesis testing
-* **lambda** Proportion of total variance due to missingness
-* **fmi** Fraction of missing information 
-
-
-## Rubin's Rules
-
-* Pooling of point estimates that are normally distributed over the imputed datasets. 
-* Means, standard deviations, regression estimates, linear predictors, proportions.
-* For pooling point estimates, use mean:
-
-  > $\hat\theta = \sum^m_{i=1}{\theta_i}$
-
-* Pooling of variance or standard error around the estimate, combine the within and between imputation variance.
-
-## Variance pooling Rubins Rules
-
-
-
-* Between variance:
-
-  > $\sigma^2_{between} = \frac{\sum^m_{i=1}(\beta_i - \overline\beta)^2}{m-1}$
-
-* Within variance:
-  
-  > $\sigma^2_{within} = \frac{\sum^m_{i=1}\sigma^2_i}{m}$
-
-
-
-* **Total variance:** 
-
-  > $\sigma^2_{total} = \sigma^2_{within} + \sigma^2_{between} + \frac{\sigma^2_{between}}{m}$
-
-
-## Pooling of non-normal parameters
-
-* Use a transformation to approximate a normal distribution
-* Examples:
-  + Correlation: Fisher $z$
-  + Odds Ratio, Relative Risk, Hazard ratio: log transformation
-  + Explained variance: Fisher $z$ for $\sqrt{R^2}$
-  
-  
   

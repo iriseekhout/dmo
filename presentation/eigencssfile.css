@@ -58,6 +58,6 @@ slides > slide.dark > hgroup h2 {
 
 /*change section slide layout*/
 .segue h2 {
-  color: black;
+  color: #1a3e28;
   font-size: 60px;
 }
