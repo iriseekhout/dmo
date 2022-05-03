@@ -1,0 +1,333 @@
+---
+title: "Solutions - Missing data workshop"
+author: "dr. Iris Eekhout"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	comment = ">"
+)
+```
+
+# Missing value analyses
+
+## Solution 1: amount of missing values
+
+```{R}
+# load library mice to load boys data
+library(mice)
+```
+
+**a. How many variables have missing data?**
+
+All variables, except for age, have missing values, so in total 8 out of 9 variables have missing data.
+
+```{r}
+# summary to see which variables have missing data
+summary(boys)
+```
+
+**b. How many rows in the data contain missing values?** 
+
+In total 525 rows in the data have missing values, this is ~70%. 
+
+```{r}
+nic(boys)
+nic(boys)/nrow(boys)
+```
+
+**c. How many overall matrix entries are missing? And how many observed?**
+
+1622 matrix entries are missing and 5110 are observed; ~25% of the matrix entries are missing.
+
+```{r}
+sum(is.na(boys))
+sum(!is.na(boys))
+
+1622/(1622+5110)
+```
+
+
+## Solution 2: missing data patterns
+
+**a. How many different missing data patterns occur in the data?**
+
+14 patterns
+
+```{r}
+nrow(mice::md.pattern(boys, plot= T))
+
+```
+
+
+**b. What is the most frequently occurring pattern in the data?**
+
+The pattern with "gen", "phb" and "tv" missing, occurs 437 times.
+
+```{r}
+mice::md.pattern(boys, plot= T)
+
+```
+
+**c. Looking at patterns that occur more than incidental (once or twice), which variables happen to be missing together often?**
+
+Variables that are most often missing at the same time are "gen", "phb", and "tv". The patterns that occur more than once involve mostly all of these variables (pattern with "hc" and "gen", "pbh", "tv" 43 times and the pattern with "hgt", "bmi" and  "gen", "phb", "tv" 16 times, pattern "reg" and "gen", "phb", "tv", 3 times, pattern with "tv" mising 19 times).
+
+
+**d. Inspect the missing data pairs. With what other variable(s) is height observed together with in more than half of the cases?**
+
+The answer can be found looking at the first matrix `rr`. In the row of "hgt", the column values that are higher than 374 indicate variables that are observed with hgt more than half of the time: "age", "wgt", "bmi", "hc", and "reg".
+
+```{r}
+mice::md.pairs(boys)
+```
+
+
+## Solution 3: understanding missing data mechanisms
+
+**a. What is the mean and standard deviation of knee pain score? And the association between BMI and knee pain (coefficient, standard error and p-value)?**
+
+Mean= 14.81, sd=3.21; The association is significant with coefficient=0.35; se=0.14.
+
+**b. What are the mean and standard deviation of the knee pain score? What is association between BMI and knee pain?**
+
+Mean= 14.70, sd=3.24; The association is not significant (coefficient=0.33; se=0.18).
+
+**c. How do these results compare to the complete data results?**
+
+The mean and standard deviation have not changed much, however the power for the association was decreased which caused the association between BMI and knee pain to not be significant anymore. 
+
+**d. What happens to the association between BMI and knee pain? Explain differences with the previous answer (sample size 100).**
+
+At 0% missing: coefficient=0.57 and se=0.08 (significant); at 30% missing: coefficient=0.53 and se=0.10 (significant). The association does not change (much) and remains significant. The difference with answer c is explained by the change in sample size. Larger sample size, makes the analysis more robust against (MCAR) missing data.
+
+**e. What is the association between BMI and knee pain? How does this compare to the association when the data were MCAR?**
+
+There is a significant association with a coefficient of 0.49, se=0.11; the association is now less strong; the coefficient is lower (biased) (was 0.57 for 0% missing) and the standard error has increased slightly (was 0.08 for 0% missing).
+
+**f. When there are 30% MAR missing data at sample size 250, at what BMI values do missing data on knee pain occur (inspect the scatterplot and the boxplots).**
+
+More missing values at higher BMI values.
+
+**g. Comparing the histograms, what knee pain values are mostly missing?**
+
+In the MNAR situation, more missings are present in the higher values of knee pain. 
+
+**h. What happens with thee association between BMI and knee pain?**
+
+* MCAR: coefficient= 0.46; se=0.10
+* MAR: coefficient=0.37; se=0.11
+* MNAR: coefficient=0.27; se=0.11 
+* 0% missing: coefficient=0.54; se=0.07.
+
+The association becomes less strong when you change from MCAR to MAR to MNAR, so coefficients get more biased. Also for MCAR the missings are nicely distributed over the BMI values. In the MAR mechanism there are more missings at higher values of BMI but also lower Knee Pain scores are missing. In the MNAR mechanism, mostly higher values of Knee Pain scores are missing.
+
+**i What happens with the mean and standard deviation of the knee pain score?**
+
+* MCAR: mean=14.79; sd=2.98 
+* MAR: mean=14.01; sd=2.85
+* MNAR: mean= 13.34; sd=2.69
+* 0%missing: mean=14.77; sd=3.11
+
+Both mean and standard deviation decrease when changing from MCAR to MAR to MNAR.
+
+
+## Solution 4: evaluating the missing data mechanism
+
+**a. Evaluate the missing data mechanism for the boys data with univariate tests. What are your conclusions?**
+
+Evaluation using T-tests for continuous variables and the Chi-square for categorical variables.
+
+First create the missing data indicators for each variable with missing data.
+```{r}
+library(dplyr)
+boysm <- boys %>%
+  #create missing data indicators
+  mutate(Rhgt = is.na(hgt),
+         Rwgt = is.na(wgt),
+         Rbmi = is.na(bmi),
+         Rhc = is.na(hc),
+         Rgen = is.na(gen),
+         Rphb = is.na(phb), 
+         Rtv = is.na(tv),
+         Rreg = is.na(reg))
+
+```
+
+Do a T-test for each missing data indicator with the continuous variables and a chi square test for the categorical variables.
+
+* Missing data in hgt seem to be related to age, wgt and hc; the group with missing heights are younger, lower weights and smaller hc.
+* Nothing found for missing data in wgt
+* Missing data in bmi seem to be related to age and hc; the group with missing bmi are younger and have smaller head circumference. 
+* Missing data in hc seem to be related to age, hgt, wgt, bmi and reg; the group with missing hc are older, have higher heights, weights and bmi. 
+* Missing data in gen are related to age, hgt, wgt, bmi, hc and reg; the group with missing gen are younger, and have smaller heights, weights, bmi and hc. 
+* Missing data in phb are related to age, hgt, wgt, bmi, hc and reg; the group with missing gen are younger, and have smaller heights, weights, bmi and hc. 
+* Missing data in tv are related to age, hgt, wgt, bmi and hc; the group with missing gen are younger, and have smaller heights, weights, bmi and hc. 
+* Missing data in reg are related to age, wgt and bmi; the group with missing gen are younger, and have smaller weights and bmi. 
+
+Based on the univariate analyses we may conclude that the missing data are not Missing Completely at Random (not-MCAR). There are other measured variable related to the probability of missing data. 
+
+**Notes: we are performing a lot of tests here, so we may want to adjust for multiple testing; Some of the chi-square tests do not have sufficient observations in the cells so be careful about conclusions for these tests; some tests could not be performed because variables are always missing at the same time.**
+
+```{r}
+# Univariate tests for hgt
+t.test(age ~ Rhgt, data = boysm)
+t.test(wgt ~ Rhgt, data = boysm)
+#t.test(bmi ~ Rhgt, data = boysm)  ~ cannot be performed, because when hgt is missing, bmi is also missing.
+t.test(hc ~ Rhgt, data = boysm)
+t.test(tv ~ Rhgt, data = boysm)
+chisq.test(boysm$Rhgt, boysm$gen)
+chisq.test(boysm$Rhgt, boysm$phb)
+chisq.test(boysm$Rhgt, boysm$reg)
+
+# t-tests for wgt
+t.test(age ~ Rwgt, data = boysm)
+#t.test(hgt ~ Rwgt, data = boysm) ~ cannot be performed not enough observed hgt when wgt is missing.
+#t.test(bmi ~ Rwgt, data = boysm) ~ cannot be performed, because when wgt is missing, bmi is also missing. 
+t.test(hc ~ Rwgt, data = boysm)
+t.test(tv ~ Rwgt, data = boysm)
+chisq.test(boysm$Rwgt, boysm$gen, simulate.p.value = TRUE)
+chisq.test(boysm$Rwgt, boysm$phb, simulate.p.value = TRUE)
+chisq.test(boysm$Rwgt, boysm$reg, simulate.p.value = TRUE)
+
+# t-tests for bmi
+t.test(age ~ Rbmi, data = boysm)
+#t.test(hgt ~ Rbmi, data = boysm)
+#t.test(wgt ~ Rbmi, data = boysm) ~ cannot be performed, because when hgt is missing, bmi is also missing.
+t.test(hc ~ Rbmi, data = boysm)
+t.test(tv ~ Rbmi, data = boysm)
+chisq.test(boysm$Rbmi, boysm$gen)
+chisq.test(boysm$Rbmi, boysm$phb)
+chisq.test(boysm$Rbmi, boysm$reg)
+
+# t-tests for hc
+t.test(age ~ Rhc, data = boysm)
+t.test(hgt ~ Rhc, data = boysm)
+t.test(wgt ~ Rhc, data = boysm)
+t.test(bmi ~ Rhc, data = boysm)#
+#t.test(tv ~ Rhc, data = boysm) ~ cannot be performed not enough observed tv when hc is missing.
+chisq.test(boysm$Rhc, boysm$gen)
+chisq.test(boysm$Rhc, boysm$phb)
+chisq.test(boysm$Rhc, boysm$reg)#
+
+# t-tests for gen
+t.test(age ~ Rgen, data = boysm)
+t.test(hgt ~ Rgen, data = boysm)
+t.test(wgt ~ Rgen, data = boysm)
+t.test(bmi ~ Rgen, data = boysm)
+t.test(hc ~ Rgen, data = boysm)
+#t.test(tv ~ Rgen, data = boysm)
+#chisq.test(boysm$Rgen, boysm$phb)
+chisq.test(boysm$Rgen, boysm$reg)
+
+# t-tests for phb
+t.test(age ~ Rphb, data = boysm)
+t.test(hgt ~ Rphb, data = boysm)
+t.test(wgt ~ Rphb, data = boysm)
+t.test(bmi ~ Rphb, data = boysm)
+t.test(hc ~ Rphb, data = boysm)
+#t.test(tv ~ Rphb, data = boysm)
+chisq.test(boysm$Rphb, boysm$gen)
+chisq.test(boysm$Rphb, boysm$reg)
+
+
+# t-tests for tv
+t.test(age ~ Rtv, data = boysm)
+t.test(hgt ~ Rtv, data = boysm)
+t.test(wgt ~ Rtv, data = boysm)
+t.test(bmi ~ Rtv, data = boysm)
+t.test(hc ~ Rtv, data = boysm)
+chisq.test(boysm$Rtv, boysm$gen)
+chisq.test(boysm$Rtv, boysm$phb)
+chisq.test(boysm$Rtv, boysm$reg)
+
+# t-tests for reg
+t.test(age ~ Rreg, data = boysm)
+t.test(hgt ~ Rreg, data = boysm)
+t.test(wgt ~ Rreg, data = boysm)
+t.test(bmi ~ Rreg, data = boysm)
+t.test(hc ~ Rreg, data = boysm)
+#t.test(tv ~ Rreg, data = boysm)
+#chisq.test(boysm$Rreg, boysm$gen)
+#chisq.test(boysm$Rreg, boysm$phb)
+
+```
+
+
+
+**b. Evaluate the missing data mechanism for the nhanes data with a multivariate test. What are your conclusions?**
+
+First, investigate which variables have missing data in the `airquality` data: Ozone and Solar.R 
+
+```{r}
+summary(airquality)
+mice::md.pattern(airquality)
+```
+
+Create missing data indicators for these two variables. Additional, we can also make one missing indicator for any missing values. Note that this is only useful if we have at least some variables that have no missing data. 
+
+```{r}
+airqualitym <- airquality %>%
+  mutate(ROzone = is.na(Ozone),
+         RSolar.R = is.na(Solar.R),
+         Rind = is.na(Ozone) | is.na(Solar.R))
+
+```
+
+Do a logistic regression analysis for each of the missing data indicators. Both Temp and Month seem to be related to the missing values in Ozone. There are no measured variables related to the missing values in Solar.R. Based on these results we can conclude that the missing values in the airquality dataset are not-MCAR.
+
+```{R}
+glm(ROzone ~ Solar.R + Wind + Temp + Month + Day, data = airqualitym, family = "binomial") %>% summary
+glm(RSolar.R ~ Ozone + Wind + Temp + Month + Day, data = airqualitym, family = "binomial") %>% summary
+
+# analysis for the indicator of overall missing data
+glm(Rind ~ Wind + Temp + Month + Day, data = airqualitym, family = "binomial") %>% summary
+
+```
+
+# Multiple imputation
+
+## Solution 5: multiple imputation in `mice`
+
+**a. How many imputed datasets are generated?**
+
+The output returned from the mice functions states: "Number of multiple imputations: 5". 
+
+```{R}
+imp <- mice(nhanes2)
+imp
+```
+
+**b. How many sets of results are generated** 
+
+The `with` function can be used to automatically analyze all imputed datasets. The analysis results are stored as `fit`. There are 5 sets of results generated.
+
+```{R}
+fit <- with(imp, lm(bmi ~ age + hyp + chl))
+fit
+```
+
+**c. What are the most relevant predictors for bmi?**
+
+The most relevant predictors are age and cholesterol. Older respondents have a lower bmi, whereas cholesterol is positively related (higher cholesteral means a higher bmi). 
+
+```{R}
+combi <- pool(fit)
+summary(combi)
+
+``` 
+
+
+## Solution 6: multiple imputation model
+
+
+
+## Solution 7: multiple imputation iteration plots
+
+
