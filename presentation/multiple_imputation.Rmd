@@ -76,6 +76,7 @@ theme_set(theme_light())
 ## Predictors for imputation
 
 Imputation model 
+
 * For each variable, the most relevant predictors can be indicated
 * Use variables that are in the analysis model also in the imputation model (compatibility)
 * Add *auxiliary variables* 
