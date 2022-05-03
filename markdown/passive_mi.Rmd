@@ -31,14 +31,14 @@ Data are generated for 100 subjects. Each subjects has observations for 5 questi
 #generate questionnaire data
 k <- c(10,10,10,10,10)
 nq <- 5
-x <- dmo::gen_qdata(n=100, k= k)
+x <- dmo::gen_qdata(n=100, k= k, likert = T)
 
 #generate covariate data
 cov <- MASS::mvrnorm(n=100, mu=c(5,5,5), Sigma=matrix(c(10,1,1,1,10,1,1,1,10),3,3))
 colnames(cov) <- c("cov1", "cov2", "cov3")
 
 #combine in data.frame
-x1 <- data.frame(x,cov)
+x1 <- data.frame(bind_cols(x,cov))
 
 ```
 
