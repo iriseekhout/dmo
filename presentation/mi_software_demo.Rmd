@@ -1,0 +1,119 @@
+---
+title: "Software demo"
+author: "Dr. Iris Eekhout"
+subtitle: "Workshop name"
+date: "`r format(Sys.Date())`"
+output: 
+  ioslides_presentation:
+  logo: Puzzle_zgnb3_m.jpg
+theme: readable
+css: eigencssfile.css
+widescreen: true
+always_allow_html: yes
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(dmo)
+library(mice)
+library(haven)
+```
+
+# Software demo `mice` {data-background=Puzzle_zgnb3.jpg data-background-size=cover}
+
+
+## Summary of data
+
+```{r}
+summary(nhanes2)
+
+``` 
+
+
+## Multiple imputation
+
+```{r eval = FALSE, include = TRUE}
+install.packages("mice")
+library(mice)
+```
+
+```{r}
+imp <-mice(nhanes2, m=5, maxit=10, seed = 800)
+```
+
+## predictor matrix
+
+```{r}
+imp$pred
+```
+
+Remove a predictor variable, e.g remove "bmi" as predictor for "chl".
+
+```{r}
+
+imp$pred["chl","bmi"] <- 0
+imp$pred
+
+pred_update <- imp$pred
+```
+
+## methode per variable
+
+```{r}
+imp$meth
+```
+
+Change the imputation method for one variable
+```{r}
+imp$meth["bmi"] <- "norm"
+imp$meth
+
+meth_update <- imp$meth
+```
+
+
+## Run with new settings
+
+```{r}
+imp_update <- mice(boys, m=5, maxit=10, pred=pred_update, meth=meth_update, seed = 90)
+
+```
+
+
+## Iteration plots
+
+```{r}
+plot(imp)
+```
+
+## View imputed values
+
+```{r}
+stripplot(imp)
+```
+
+## View imputed values linear
+
+```{r}
+xyplot(imp, chl ~ bmi)
+
+```
+
+## Analyze imputed data
+
+```{R}
+fit <- with(imp, lm(chl ~ age))
+
+```
+
+
+## Pool results
+
+```{r}
+
+pool(fit)
+
+```
+
+
