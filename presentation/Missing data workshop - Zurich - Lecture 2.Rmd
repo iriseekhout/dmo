@@ -13,7 +13,7 @@ always_allow_html: yes
 ---
 
 ```{r setup, include = F}
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, comment = ">")
 
 library(dmo)
 library(ggplot2)
@@ -332,7 +332,7 @@ ggplot(wl_imp %>% filter(Rid == 0), aes(month, weight, group = id, color = facto
 ## Imputation phase
 
 * Imputing the missing data entries with multiple "plausible" values
-* Specify the imputation model 
+* Specify the **imputation model** 
   + method to estimate imputed values
   + predictors used in the model
   

@@ -13,7 +13,7 @@ always_allow_html: yes
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, comment = ">")
 library(dplyr)
 library(tidyr)
 library(mice)
@@ -57,11 +57,12 @@ wideexmc <- longexmc %>%
 ## Repeated measurements data
 
 * In longitudinal studies people are monitored for a longer time period.
-* For example RCT with follow-up
- + Baseline
- + Post-treatment
- + Follow-up
-* Intensive longitudinal data: sensor measurements, daily measures
+* For example RCT with follow-up.
+  + Baseline
+  + Post-treatment
+  + Follow-up
+* Intensive longitudinal data: sensor measurements, daily measures.
+
 
 ## Challenges
 
@@ -79,15 +80,17 @@ wideexmc <- longexmc %>%
 ## Wide data format
 
 ```{R echo=FALSE}
-wideex
+head(wideex, 15)
 ```
 
 
 ## Long data format
 
-```{R}
-longex <- wideex %>% pivot_longer(cols = T0:T2, names_to = "time", values_to = "outcome")
-longex
+```{R echo = FALSE}
+longex <- wideex %>% 
+  pivot_longer(cols = T0:T2, names_to = "time", values_to = "outcome") %>% 
+  as.data.frame
+head(longex, 15)
  
 ```
 
@@ -106,20 +109,22 @@ longex
 
 ## Example wide imputation
 
-Data set with measurements at three time-points for:
+Data set for two groups with measurements at three time-points for:
 
 * outcome
 * covariate 1
 * covariate 2
 * covariate 3
-* one group variable
 
-In total: 13 variables in wide imputation.
 
-## Practical solution for wide imputation
+In total: 13 variables in wide imputation. Can grow large when more variables are measured at each time-point.
 
-* Leave out covariates from other time-points
-* Example predictormatrix for cov1 
+## Practical solution for wide imputation {.smaller}
+
+* Leave out covariates from other time-points as predictors in imputation model
+* Adapt the predictormatrix
+
+Example predictormatrix for cov1 
 
 ```{r}
 ### change to have covs for T0 to outcome T0 and covs for T1 to uotcome T1 etx.
@@ -140,36 +145,46 @@ wide_pred[c("cov1_T0", "cov1_T1", "cov1_T2"), 3:14]
 * `miceadds` package contains many additional methods
 * `broom.mixed` to enable the `pool` function for the mice output.
 
-## Example long imputation
+## Long imputation predictormatrix {.smaller}
 
 * Use `-2` for cluster variable `id` in predictormatrix (random intercept)
-* Change method to `2l.pmm`
 
 ```{r}
 long_pred <- mice::make.predictorMatrix(longexmc)
 long_pred[c(2:7), "id"] <- (-2)
+long_pred
+
+```
+
+## Long imputation method {.smaller}
+
+* Change method to `2l.pmm`
+
+```{r}
 ini <- mice(longexmc, m = 1, maxit = 0, pred = long_pred)
 long_meth <- ini$method
 long_meth[c("outcome", "cov1")] <- "2l.pmm"
-long_pred
 long_meth
 
 ```
 
-
 ## FIML for missing outcomes
 
 * Missings in dependent variable solved in Maximum likelihood estimation
-* * $Outcome = \beta_0 + \beta_1*cov2 + b_{0j} + \epsilon_{ij}$
-+ $b_{0j}$ is random intercept at subject level
-* Estimation method optimized model parameter using observed data of dependent variable
+  + $Outcome = \beta_0 + \beta_1*cov2 + b_{0j} + \epsilon_{ij}$
+  + $b_{0j}$ is random intercept at subject level
+* Estimation method optimizes model parameter using *all* observed data of dependent variable
 
 *Missing covariate data are handled by listwise deletion*
 
-## Example no imputation
+## Example no imputation {.smaller}
 
-* cov2 has no missing data
+* Only cov1 has missing data
 * Outcome variable has missing observations (drop-out)
+
+```{r}
+md.pattern(longexmc, plot = F)
+```
 
 ```{r}
 fit1 <- lme4::lmer(outcome ~ cov2 + (1|id), data = longexmc)
@@ -179,10 +194,11 @@ tidy(fit1, conf.int = T)
 
 ## Example with imputation
 
+* Impute the outcome (and cov1) as comparison.
+
 ```{r message=FALSE, warning=FALSE}
 mlimp <- mice(longexmc, m = 5, maxit = 10, method = long_meth, pred = long_pred, print = F, seed = 899)
 fitmi <- with(mlimp, lmer(outcome ~ cov2 + (1|id)))
-pool(fitmi)
-
+combi <- pool(fitmi)
+summary(combi)
 ```
-

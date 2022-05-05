@@ -13,7 +13,11 @@ always_allow_html: yes
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
 library(mice)
 library(lavaan)
 library(dplyr)
@@ -27,6 +31,7 @@ library(semTools)
 * Uses all observed data, so also partly observed rows, to estimate model parameters.
 * Analysis and dealing with missing data, at once
 * Different ways to estimate, for example EM algorithm
+* Only involves variables used in the analysis
 
 
 ## FIML in `lavaan` {.smaller}
@@ -52,17 +57,28 @@ fit <- sem(model, data = airquality, missing = "fiml", meanstructure = TRUE)
 ## FIML descriptives {.smaller}
 
 
-```{r}
-summary(fit, standardized = TRUE)
+```{r echo=FALSE}
+summary(fit, standardized = TRUE, header = FALSE)
 ```
 
-## Output explained
 
-* Intercepts: FIML means
-* Variance: FIML variances
-* Covariances: FIML correlation (because `standardized = TRUE`).
+## Output explained {.smaller}
 
-## Missing data patterns
+Output is quite large and gives a lot of information at once. 
+
+* Intercepts: FIML means 
+  + *~1* in output tables 
+* Variance: FIML variances 
+  + *variable x ~~ variable x* in output tables
+* Covariances: FIML correlation (because `standardized = TRUE`) 
+  + *variable x ~~ variable y* in output tables
+
+
+Use `fmi = TRUE` in the `summary()` function to get fraction of missing information. 
+
+fmi = the relative increase in variance and decrease of precision due to missing data, i.e. impact of missing data on estimates.
+
+## Missing data patterns 
 
 * Missing data patterns in the data
 
@@ -81,22 +97,23 @@ inspect(fit, 'patterns')
 inspect(fit, 'coverage')
 ```
 
-## Linear regression analysis
+## Linear regression analysis {.smaller}
 
 ```{r}
 model <- '
   Ozone ~ Solar.R 
   '
 fit_fiml <- sem(model, data = airquality, missing = "fiml")
-summary(fit_fiml)
+summary(fit_fiml, header = FALSE, fmi = TRUE)
 ```
 
-## Compare with MI
+## Compare with MI {.smaller}
 
 ```{r}
 imp_pmm <- mice(airquality %>% select(Ozone, Solar.R), method = "pmm", print = F)
 fit_mi <- with(imp_pmm, lm(Ozone ~ Solar.R))
-pool(fit_mi)
+combi <- pool(fit_mi)
+summary(combi)
 ```
 
 ## SEM with auxiliary variables {.smaller}
@@ -114,7 +131,12 @@ model_aux <- '
   Month ~~ Day
   '
 auxfit1 <- sem(model = model_aux, missing = "fiml", data = airquality)
-summary(auxfit1)
+```
+
+## SEM with auxiliary variables {.smaller}
+
+```{r, echo = FALSE}
+summary(auxfit1, header = FALSE, fmi = TRUE)
 ```
 
 
@@ -126,16 +148,24 @@ summary(auxfit1)
 ```{r}
 aux.vars <- c("Wind", "Temp", "Month","Day")
 auxfit <- sem.auxiliary(model=model, missing = "fiml", aux=aux.vars, fixed.x=FALSE, data=airquality)
-summary(auxfit)
 
 ```
 
 
-## Compare with MI 
+## SEM with auxiliary variables {.smaller}
+
+```{r echo = FALSE}
+summary(auxfit, header = FALSE, fmi = TRUE)
+
+```
+
+
+## Compare with MI {.smaller}
 
 ```{r}
 imp_pmm <- mice(airquality, method = "pmm", print = F)
 fit_mi <- with(imp_pmm, lm(Ozone ~ Solar.R))
-
-pool(fit_mi)
+combi <- pool(fit_mi)
+summary(combi)          
+  
 ```
