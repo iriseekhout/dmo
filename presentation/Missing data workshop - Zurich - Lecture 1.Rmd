@@ -44,7 +44,7 @@ GitHub: iriseekhout
 **Interests**:
 
 * Missing data methods (multiple imputation)
-* Longitudinal (Multilevel) modelling
+* Longitudinal (multilevel) modelling
 * R programming/shiny apps
 * Psychometrics and measurement
 
@@ -67,7 +67,7 @@ GitHub: iriseekhout
 * Lecture 1: Missing data analyses
 
   + What are missing data, why do we have missing data?
-	+ What kind of missing data are there?
+  + What kind of missing data are there?
 	+ What are missing data mechanisms?
 	+ How can we investigate our missing data?
 
@@ -110,6 +110,7 @@ GitHub: iriseekhout
 * Website about missing data: www.missingdata.nl
 * Flexible Imputation of Missing Data (Stef van Buuren): https://stefvanbuuren.name/fimd/
 * Applied missing data analysis with SPSS and R (Martijn Heymans & Iris Eekhout) *draft version*: https://bookdown.org/mwheymans/bookmi/
+* Applied missing data (Craig Enders): https://www.appliedmissingdata.com/
 
 
 ## Most important `R` packages
@@ -383,7 +384,9 @@ In other words the missingness on the variable is completely unsystematic.
 <center><img src="images/mailman.jpg" height="270px" /></center>
 
 
-## Complete data example {.smaller}
+## Data example {.smaller}
+
+Below the description of the complete data example.  We will use this example to show the implications of each missing data mechanism. 
 
 ```{r echo = FALSE}
 describe(x) %>% kable(caption = "Description of fully observed data", digits = 2) %>% kable_styling()
@@ -393,14 +396,20 @@ describe(x) %>% kable(caption = "Description of fully observed data", digits = 2
 ## MCAR data example {.smaller}
 
 When we create MCAR data for 50% of the subject in variable `X1` we see that the statistics for variable `X1` have not changed much:
-```{r}
+
+```{r echo = FALSE}
 set.seed(8965)
 mcar <- MCAR(x, alpha = 0.5, pattern = matrix(c(0,1,1), nrow = 1))
 ```
 
 ```{r echo = FALSE}
-describe(mcar) %>% kable(caption = "Description of MCAR data - 50% ", digits = 2) %>% kable_styling()
+describe(x %>% select(X1)) %>% kable(caption = "Description of fully observed data", digits = 2) %>% kable_styling()
 ```
+
+```{r echo = FALSE}
+describe(mcar %>% select(X1)) %>% kable(caption = "Description of MCAR data - 50% ", digits = 2) %>% kable_styling()
+```
+
 
 ## MCAR distribution
 
@@ -444,24 +453,24 @@ For example, older people more often have missing values for IQ. In that case th
 <br>
 <center><img src="images/577.jpg" height="270px" /></center>
 
-## Complete data example {.smaller}
-
-```{r echo = FALSE}
-describe(x) %>% kable(caption = "Description of fully observed data", digits = 2) %>% kable_styling()
-```
 
 
 ## MAR data example {.smaller}
 
 When we create MAR data for 50% of the subject in variable `X1` we see that the statistics for variable `X1` have changed:
-```{r}
+```{r, echo = FALSE}
 set.seed(4665)
 mar <- MAR(x, alpha = 0.5, pattern = matrix(c(0,1,1), nrow = 1))
 ```
 
 ```{r echo = FALSE}
-describe(mar) %>% kable(caption = "Description of MAR data - 50% ", digits = 2) %>% kable_styling()
+describe(x %>% select(X1)) %>% kable(caption = "Description of fully observed data", digits = 2) %>% kable_styling()
 ```
+
+```{r echo = FALSE}
+describe(mar %>% select(X1)) %>% kable(caption = "Description of MAR data - 50% ", digits = 2) %>% kable_styling()
+```
+
 
 ## MAR distribution
 
@@ -507,16 +516,10 @@ For example, when weight data are missing mostly for the more heavy persons.
 <center><img src="images/40779.jpg" height="270px" /></center>
 
 
-## Complete data example {.smaller}
-
-```{r echo = FALSE}
-describe(x) %>% kable(caption = "Description of fully observed data", digits = 2) %>% kable_styling()
-```
-
 ## MNAR data example {.smaller}
 
 When we create MNAR data for 50% of the subject in variable `X1` we see that the statistics for variable `X1` have changed:
-```{r}
+```{r echo = FALSE}
 set.seed(5476)
 mnar <- x %>% mutate(rand = runif(1000),
                      X1 = ifelse(X1 > 0 & rand > 0.2, NA, X1), 
@@ -525,7 +528,11 @@ mnar <- x %>% mutate(rand = runif(1000),
 ```
 
 ```{r echo = FALSE}
-describe(mnar) %>% kable(caption = "Description of MNAR data - 50% ", digits = 2) %>% kable_styling()
+describe(x %>% select(X1)) %>% kable(caption = "Description of fully observed data", digits = 2) %>% kable_styling()
+```
+
+```{r echo = FALSE}
+describe(mnar %>% select(X1)) %>% kable(caption = "Description of MNAR data - 50% ", digits = 2) %>% kable_styling()
 ```
 
 
@@ -686,6 +693,8 @@ The probability of missing data can also be investigated in a logistic regressio
 
 The missing data indicator is the dependent variable and the other variables that may be related to the probability of missing data are the independent variables. 
 
+Test for multiple independent variables at once.
+
 The results of the logistic regression analysis show if the independent variables relate to the probability of missing data.
 
 *Note that when the other variables have missing values as well, a complete-case analysis is used per default.* 
@@ -718,9 +727,9 @@ glm(R1 ~ X2 + X3, data = mnar) %>%
 
 In the MCAR example both `X2` and `X3` are not related to the probability of missing data in `X1`, so we may assume that the missing data in `X1` are MCAR. 
 
-However, in the MAR example, both variables are related tot he probability of missing data in `X1`, so in that case we can assume that the data are not-MCAR. 
+However, in the MAR and MNAR examples, both variables are related tot he probability of missing data in `X1`, so in that case we can assume that the data are not-MCAR. 
 
-We cannot rule-out MNAR in this situation, since cannot test the missing values itself. 
+We cannot differentiate between MAR and MNAR in this situation, since cannot test the missing values itself. 
 
 
 ## Little's MCAR test
@@ -814,7 +823,7 @@ The methods to deal with missing data, implicitly assume a missing data mechanis
 **MCAR**: the most strict assumption. In practice it is also easiest to deal with MCAR data. 
 
 1. Analyze the observed sample only (this will result in unbiased estimates).
-2. Use an imputation method to boost the power the the amount of missing data is too large. 
+2. Use an imputation method to boost the power when the amount of missing data is too large. 
 
 
 ## Assuming the missing data mechanism (MAR) {.build}
@@ -823,7 +832,8 @@ The methods to deal with missing data, implicitly assume a missing data mechanis
 
 * Include variables in study that may explain the missing data, a MAR assumption may become more plausible (as compared to MNAR). 
 * These auxiliary variables may also help in dealing with the missing data. 
-* Auxiliary variables: variables related to the probability of missing data or to the variable with missing data. Can be used as predictors in an imputation model or as covariates in a FIML model to improve estimations.
+* **Auxiliary variables**: variables related to the probability of missing data or to the variable with missing data. 
+  + Can be used as predictors in an imputation model or as covariates in a FIML model to improve estimations.
 
 
 ## Assuming the missing data mechanism (MNAR) {.build}
@@ -831,5 +841,3 @@ The methods to deal with missing data, implicitly assume a missing data mechanis
 **MNAR**: least strict assumption. 
 
 * MNAR data are also referred to as non-ignorable, because these cannot be ignored without causing bias in results. MNAR data are more challenging to deal with. 
-
-
