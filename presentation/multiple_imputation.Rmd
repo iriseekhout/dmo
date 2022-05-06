@@ -29,9 +29,9 @@ theme_set(theme_light())
 
 * Imputing the missing data entries with multiple "plausible" values.
 * Takes imputation uncertainty into account
-* A method to improve the main analysis results, (so not to complete or fill in data)
+* A method to improve the main analysis results, *so not to get a fully observed data set*.
   + Unbiased estimates
-  + Improved precision and thus power
+  + More precision and thus power
 * R package: `mice`
   
 
@@ -45,6 +45,12 @@ theme_set(theme_light())
 > 2. generate multiple copies of the same dataset, but each time differenty imputed values
 > 3. analyze each imputed dataset
 > 4. pool results for analyses to final study result
+
+## Multiple Imputation process
+
+<br>
+<center><img src="images/imp_process_with_text.png" height="330px" /></center>
+
 
 ## Imputation phase
 
