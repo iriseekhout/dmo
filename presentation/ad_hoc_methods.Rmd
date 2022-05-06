@@ -44,7 +44,8 @@ The methods to deal with missing data, implicitly assume a missing data mechanis
 
 * Include variables in study that may explain the missing data, a MAR assumption may become more plausible (as compared to MNAR). 
 * These auxiliary variables may also help in dealing with the missing data. 
-* Auxiliary variables: variables related to the probability of missing data or to the variable with missing data. Can be used as predictors in an imputation model or as covariates in a FIML model to improve estimations.
+* **Auxiliary variables**: variables related to the probability of missing data or to the variable with missing data. 
+  + Can be used as predictors in an imputation model or as covariates in a FIML model to improve estimations.
 
 
 ## Assuming the missing data mechanism (MNAR) 
@@ -60,7 +61,7 @@ The methods to deal with missing data, implicitly assume a missing data mechanis
 **Complete-case analysis (CCA)**: only the cases with observed data for all variables involved are used in the analysis. 
 
 * The most common and easy way to deal with missing data. 
-* The default methods for many data analysis procedure. 
+* The default method for many data analysis procedures. 
 * Assumes MCAR
 
 **Parameter estimates**:
@@ -70,17 +71,21 @@ The methods to deal with missing data, implicitly assume a missing data mechanis
 * Standard errors are overestimated
 
 
-## CCA | linear regression when MCAR
+## CCA {.smaller} 
 
-```{R echo=FALSE}
+```{R echo=FALSE, fig.height = 4, fig.align='center'}
 set.seed(7869)
 x <- MASS::mvrnorm(n=100,mu=c(0,0,0), Sigma=matrix(c(5,1,1,1,5,1,1,1,5),3,3)) %>% 
   data.frame() 
 set.seed(8965)
 mcar <- MCAR(x, alpha = 0.5, pattern = matrix(c(0,1,1), nrow = 1))
 
-lm(X1 ~ X2, data = x) %>% tidy()
-lm(X1 ~ X2, data = mcar) %>% tidy()
+fitx <- lm(X1 ~ X2, data = x) %>% tidy()
+fitmcar <- lm(X1 ~ X2, data = mcar) %>% tidy()
+show <- data.frame(bind_rows(round(fitx[2,c(2,3,5)],2),
+                     round(fitmcar[2,c(2,3,5)],2)))
+rownames(show) <- c("Complete", "MCAR")
+show %>% kable(caption = "MCAR | regression") %>% kable_styling(full_width = FALSE, position = "left")
 
 ggplot()+
   geom_point(data = x, aes(X2, X1), color = "#F8766D") +
@@ -93,18 +98,23 @@ ggplot()+
 #red: F8766D
 ```
 
-## CCA | linear regression when MAR
+## CCA {.smaller}
 
 
-```{R echo=FALSE}
+```{R echo=FALSE, fig.height = 4, fig.align='center'}
 set.seed(7869)
 x <- MASS::mvrnorm(n=100,mu=c(0,0,0), Sigma=matrix(c(5,1,1,1,5,1,1,1,5),3,3)) %>% 
   data.frame() 
 set.seed(8965)
 mar <- MAR(x, alpha = 0.5, pattern = matrix(c(0,1,1), nrow = 1))
 
-lm(X1 ~ X2, data = x) %>% tidy()
-lm(X1 ~ X2, data = mar) %>% tidy()
+fitx <- lm(X1 ~ X2, data = x) %>% tidy()
+fitmar <- lm(X1 ~ X2, data = mar) %>% tidy()
+show <- data.frame(bind_rows(round(fitx[2,c(2,3,5)],2),
+                     round(fitmar[2,c(2,3,5)],2)))
+rownames(show) <- c("Complete", "MAR")
+show %>% kable(caption = "MAR | regression") %>% 
+  kable_styling(full_width = FALSE, position = "left")
 
 ggplot()+
   geom_point(data = x, aes(X2, X1), color = "#F8766D") +
@@ -140,18 +150,20 @@ Other examples:
 * All missing values are average (i.e. mean imputation)
 * People with missing data remain stable (i.e. LOCF)
 
-## Example data
+## Example data {.smaller}
 
-```{r echo=FALSE}
-load("~/GitHub/dmo/data/perform.rda")
-perform %>% group_by(gender) %>% summarise(n = n(),
+```{r echo=FALSE, fig.height = 4, fig.align='center'}
+dmo::perform %>% group_by(gender) %>% summarise(n = n(),
                                            "wgt n" = sum(!is.na(weight)),
                                            "wgt mean" = mean(weight, na.rm = TRUE),
                                            "wgt sd" = sd(weight, na.rm = TRUE),
                                            "prf n" =sum(!is.na(performance)),
                                            "prf mean" = mean(performance, na.rm = TRUE), 
                                            "prf sd" = sd(performance, na.rm = TRUE)) %>%
-  kable(digits = 3) %>% kable_styling()
+  kable(digits = 3,
+        col.names = c("Gender", "n", "n", "mean", "sd", "n", "mean","sd")) %>% 
+  kable_styling(full_width = FALSE, position = "left") %>%
+  add_header_above(c(" " = 2, "Weight" = 3, "Performance" = 3))
 
 ggplot(perform, aes(x = weight, y = performance, group = gender, color = gender)) +
   geom_point()
@@ -183,10 +195,13 @@ ggplot(id_mn, aes(weight, performance, color = factor(Rperf), group = factor(Rpe
 
 ```
 
-## Regression imputation
+## Regression imputation {.smaller}
 
 Conditional mean imputation, estimating the imputed value as a predicted value from a regression model:
-$Y_{imp} = \beta_0 + \beta_1 * X
+$Y_{imp} = \beta_0 + \beta_1 * X$
+
+
+Parameter estimates: 
 
 * Mean is unbiased when MAR
 * Regression weight is unbiased when MAR
@@ -194,7 +209,7 @@ $Y_{imp} = \beta_0 + \beta_1 * X
 * Standard errors are underestimated
 
 
-## Regression imputation | Example
+## Regression imputation | Example {.smaller}
 
 Imputation from regression equation: $Performance = \beta_0 + \beta_1 * weight + \beta_2 * gender$
 
@@ -205,7 +220,7 @@ id_rg <- bind_cols(complete(imp_reg), Rperf = Rperf)
 
 
 ggplot(data = perform, aes(weight, performance, group = gender))+
-  geom_point(size = 2)+
+  geom_point(size = 1)+
   geom_smooth(method = "lm", se = FALSE, color = "grey") +
   geom_point(data = id_rg, aes(weight, performance, color = factor(Rperf), group = gender))+
   theme(legend.position = "none")
@@ -215,7 +230,7 @@ ggplot(data = perform, aes(weight, performance, group = gender))+
 
 
 
-## Regression imputation + sampling error
+## Regression imputation + sampling error {.smaller .build}
 
 <!--
 https://statisticsglobe.com/regression-imputation-stochastic-vs-deterministic/
@@ -226,6 +241,8 @@ Stochastic regressions: = regression imputation, with additional sampling error 
 
 Sampling error is normally distributed.
 
+Parameter estimates:
+
 * Mean is unbiased when MAR
 * Regression weight is unbiased when MAR
 * Correlation is unbiased when MAR
@@ -233,7 +250,7 @@ Sampling error is normally distributed.
 
 *Imputation uncertainty is not taken into account*
 
-## Regression imputation + residual error | Example
+## Regression imputation + residual error | Example {.smaller}
 
 Imputation from regression equation: $Performance = \beta_0 + \beta_1 * weight + \beta_2 * gender + \epsilon$
 
@@ -245,7 +262,7 @@ id_rg <- bind_cols(complete(imp_reg), Rperf = Rperf)
 
 
 ggplot(data = perform, aes(weight, performance, group = gender))+
-  geom_point(size = 2)+
+  geom_point(size = 1)+
   geom_smooth(method = "lm", se = FALSE, color = "grey") +
   geom_point(data = id_rg, aes(weight, performance, color = factor(Rperf), group = gender))+
   theme(legend.position = "none")
@@ -269,9 +286,8 @@ Assumes that people that drop out of the study remain stable.
 * Missing data occurs at the measurements after the baseline, due to study drop-out.
 
 ```{R echo=FALSE}
-load("~/GitHub/dmo/data/weightloss.rda")
 
-mice::md.pattern(weightloss %>% pivot_wider(id_cols = c(id, group), names_from = month, values_from = weight))
+mice::md.pattern(dmo::weightloss %>% pivot_wider(id_cols = c(id, group), names_from = month, values_from = weight))
 
 ```
 
@@ -292,6 +308,7 @@ wl_imp <- tidyr::fill(wl, weight)
 ggplot(wl_imp, aes(month, weight, group = id, color = factor(Rwl)))+
   geom_line() +
   geom_point() +
+  theme(legend.position = "none")+
   facet_wrap(.~group, nrow = 2)
 ```
 
@@ -303,7 +320,8 @@ Below only the cases with missing observations, separated by group.
 ggplot(wl_imp %>% filter(Rid == 0), aes(month, weight, group = id, color = factor(Rwl)))+
   geom_line() +
   geom_point() +
-  facet_wrap(.~group, nrow = 2)
+   theme(legend.position = "none")+
+ facet_wrap(.~group, nrow = 2)
 
 ```
 
