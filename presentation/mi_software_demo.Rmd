@@ -31,7 +31,7 @@ summary(nhanes2)
 ``` 
 
 
-## Multiple imputation
+## Multiple imputation {.smaller}
 
 ```{r eval = FALSE, include = TRUE}
 install.packages("mice")
@@ -42,7 +42,7 @@ library(mice)
 imp <-mice(nhanes2, m=5, maxit=10, seed = 800)
 ```
 
-## predictor matrix
+## predictor matrix {.smaller}
 
 ```{r}
 imp$pred
@@ -58,7 +58,7 @@ imp$pred
 pred_update <- imp$pred
 ```
 
-## methode per variable
+## methode per variable {.smaller}
 
 ```{r}
 imp$meth
@@ -73,7 +73,7 @@ meth_update <- imp$meth
 ```
 
 
-## Run with new settings
+## Run with new settings {.smaller}
 
 ```{r}
 imp_update <- mice(boys, m=5, maxit=10, pred=pred_update, meth=meth_update, seed = 90)
