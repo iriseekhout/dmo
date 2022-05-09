@@ -44,7 +44,8 @@ The methods to deal with missing data, implicitly assume a missing data mechanis
 
 * Include variables in study that may explain the missing data, a MAR assumption may become more plausible (as compared to MNAR). 
 * These auxiliary variables may also help in dealing with the missing data. 
-* Auxiliary variables: variables related to the probability of missing data or to the variable with missing data. Can be used as predictors in an imputation model or as covariates in a FIML model to improve estimations.
+* **Auxiliary variables**: variables related to the probability of missing data or to the variable with missing data. 
+  + Can be used as predictors in an imputation model or as covariates in a FIML model to improve estimations.
 
 
 ## Assuming the missing data mechanism (MNAR) 
@@ -60,7 +61,7 @@ The methods to deal with missing data, implicitly assume a missing data mechanis
 **Complete-case analysis (CCA)**: only the cases with observed data for all variables involved are used in the analysis. 
 
 * The most common and easy way to deal with missing data. 
-* The default methods for many data analysis procedure. 
+* The default method for many data analysis procedures. 
 * Assumes MCAR
 
 **Parameter estimates**:
@@ -70,17 +71,21 @@ The methods to deal with missing data, implicitly assume a missing data mechanis
 * Standard errors are overestimated
 
 
-## CCA | linear regression when MCAR
+## CCA {.smaller} 
 
-```{R echo=FALSE}
+```{R echo=FALSE, fig.height = 4, fig.align='center'}
 set.seed(7869)
 x <- MASS::mvrnorm(n=100,mu=c(0,0,0), Sigma=matrix(c(5,1,1,1,5,1,1,1,5),3,3)) %>% 
   data.frame() 
 set.seed(8965)
 mcar <- MCAR(x, alpha = 0.5, pattern = matrix(c(0,1,1), nrow = 1))
 
-lm(X1 ~ X2, data = x) %>% tidy()
-lm(X1 ~ X2, data = mcar) %>% tidy()
+fitx <- lm(X1 ~ X2, data = x) %>% tidy()
+fitmcar <- lm(X1 ~ X2, data = mcar) %>% tidy()
+show <- data.frame(bind_rows(round(fitx[2,c(2,3,5)],2),
+                     round(fitmcar[2,c(2,3,5)],2)))
+rownames(show) <- c("Complete", "MCAR")
+show %>% kable(caption = "MCAR | regression") %>% kable_styling(full_width = FALSE, position = "left")
 
 ggplot()+
   geom_point(data = x, aes(X2, X1), color = "#F8766D") +
@@ -93,18 +98,23 @@ ggplot()+
 #red: F8766D
 ```
 
-## CCA | linear regression when MAR
+## CCA {.smaller}
 
 
-```{R echo=FALSE}
+```{R echo=FALSE, fig.height = 4, fig.align='center'}
 set.seed(7869)
 x <- MASS::mvrnorm(n=100,mu=c(0,0,0), Sigma=matrix(c(5,1,1,1,5,1,1,1,5),3,3)) %>% 
   data.frame() 
 set.seed(8965)
 mar <- MAR(x, alpha = 0.5, pattern = matrix(c(0,1,1), nrow = 1))
 
-lm(X1 ~ X2, data = x) %>% tidy()
-lm(X1 ~ X2, data = mar) %>% tidy()
+fitx <- lm(X1 ~ X2, data = x) %>% tidy()
+fitmar <- lm(X1 ~ X2, data = mar) %>% tidy()
+show <- data.frame(bind_rows(round(fitx[2,c(2,3,5)],2),
+                     round(fitmar[2,c(2,3,5)],2)))
+rownames(show) <- c("Complete", "MAR")
+show %>% kable(caption = "MAR | regression") %>% 
+  kable_styling(full_width = FALSE, position = "left")
 
 ggplot()+
   geom_point(data = x, aes(X2, X1), color = "#F8766D") +
@@ -140,9 +150,9 @@ Other examples:
 * All missing values are average (i.e. mean imputation)
 * People with missing data remain stable (i.e. LOCF)
 
-## Example data
+## Example data {.smaller}
 
-```{r echo=FALSE}
+```{r echo=FALSE, fig.height = 4, fig.align='center'}
 dmo::perform %>% group_by(gender) %>% summarise(n = n(),
                                            "wgt n" = sum(!is.na(weight)),
                                            "wgt mean" = mean(weight, na.rm = TRUE),
@@ -150,7 +160,10 @@ dmo::perform %>% group_by(gender) %>% summarise(n = n(),
                                            "prf n" =sum(!is.na(performance)),
                                            "prf mean" = mean(performance, na.rm = TRUE), 
                                            "prf sd" = sd(performance, na.rm = TRUE)) %>%
-  kable(digits = 3) %>% kable_styling()
+  kable(digits = 3,
+        col.names = c("Gender", "n", "n", "mean", "sd", "n", "mean","sd")) %>% 
+  kable_styling(full_width = FALSE, position = "left") %>%
+  add_header_above(c(" " = 2, "Weight" = 3, "Performance" = 3))
 
 ggplot(perform, aes(x = weight, y = performance, group = gender, color = gender)) +
   geom_point()
@@ -182,10 +195,13 @@ ggplot(id_mn, aes(weight, performance, color = factor(Rperf), group = factor(Rpe
 
 ```
 
-## Regression imputation
+## Regression imputation {.smaller}
 
 Conditional mean imputation, estimating the imputed value as a predicted value from a regression model:
-$Y_{imp} = \beta_0 + \beta_1 * X
+$Y_{imp} = \beta_0 + \beta_1 * X$
+
+
+Parameter estimates: 
 
 * Mean is unbiased when MAR
 * Regression weight is unbiased when MAR
@@ -193,7 +209,7 @@ $Y_{imp} = \beta_0 + \beta_1 * X
 * Standard errors are underestimated
 
 
-## Regression imputation | Example
+## Regression imputation | Example {.smaller}
 
 Imputation from regression equation: $Performance = \beta_0 + \beta_1 * weight + \beta_2 * gender$
 
@@ -204,7 +220,7 @@ id_rg <- bind_cols(complete(imp_reg), Rperf = Rperf)
 
 
 ggplot(data = perform, aes(weight, performance, group = gender))+
-  geom_point(size = 2)+
+  geom_point(size = 1)+
   geom_smooth(method = "lm", se = FALSE, color = "grey") +
   geom_point(data = id_rg, aes(weight, performance, color = factor(Rperf), group = gender))+
   theme(legend.position = "none")
@@ -214,7 +230,7 @@ ggplot(data = perform, aes(weight, performance, group = gender))+
 
 
 
-## Regression imputation + sampling error
+## Regression imputation + sampling error {.smaller .build}
 
 <!--
 https://statisticsglobe.com/regression-imputation-stochastic-vs-deterministic/
@@ -225,6 +241,8 @@ Stochastic regressions: = regression imputation, with additional sampling error 
 
 Sampling error is normally distributed.
 
+Parameter estimates:
+
 * Mean is unbiased when MAR
 * Regression weight is unbiased when MAR
 * Correlation is unbiased when MAR
@@ -232,7 +250,7 @@ Sampling error is normally distributed.
 
 *Imputation uncertainty is not taken into account*
 
-## Regression imputation + residual error | Example
+## Regression imputation + residual error | Example {.smaller}
 
 Imputation from regression equation: $Performance = \beta_0 + \beta_1 * weight + \beta_2 * gender + \epsilon$
 
@@ -244,7 +262,7 @@ id_rg <- bind_cols(complete(imp_reg), Rperf = Rperf)
 
 
 ggplot(data = perform, aes(weight, performance, group = gender))+
-  geom_point(size = 2)+
+  geom_point(size = 1)+
   geom_smooth(method = "lm", se = FALSE, color = "grey") +
   geom_point(data = id_rg, aes(weight, performance, color = factor(Rperf), group = gender))+
   theme(legend.position = "none")
@@ -290,6 +308,7 @@ wl_imp <- tidyr::fill(wl, weight)
 ggplot(wl_imp, aes(month, weight, group = id, color = factor(Rwl)))+
   geom_line() +
   geom_point() +
+  theme(legend.position = "none")+
   facet_wrap(.~group, nrow = 2)
 ```
 
@@ -301,10 +320,10 @@ Below only the cases with missing observations, separated by group.
 ggplot(wl_imp %>% filter(Rid == 0), aes(month, weight, group = id, color = factor(Rwl)))+
   geom_line() +
   geom_point() +
-  facet_wrap(.~group, nrow = 2)
+   theme(legend.position = "none")+
+ facet_wrap(.~group, nrow = 2)
 
 ```
-
 
 # Multiple imputation {data-background=Puzzle_zgnb3.jpg data-background-size=cover}
 
@@ -312,9 +331,9 @@ ggplot(wl_imp %>% filter(Rid == 0), aes(month, weight, group = id, color = facto
 
 * Imputing the missing data entries with multiple "plausible" values.
 * Takes imputation uncertainty into account
-* A method to improve the main analysis results, (so not to complete or fill in data)
+* A method to improve the main analysis results, *so not to get a fully observed data set*.
   + Unbiased estimates
-  + Improved precision and thus power
+  + More precision and thus power
 * R package: `mice`
   
 
@@ -329,12 +348,19 @@ ggplot(wl_imp %>% filter(Rid == 0), aes(month, weight, group = id, color = facto
 > 3. analyze each imputed dataset
 > 4. pool results for analyses to final study result
 
+## Multiple Imputation process
+
+<br>
+<center><img src="images/imp_process_with_text.png" height="330px" /></center>
+
+
 ## Imputation phase
 
 * Imputing the missing data entries with multiple "plausible" values
-* Specify the **imputation model** 
+* Specify the imputation model 
   + method to estimate imputed values
   + predictors used in the model
+  + *can both be specified for each variable with missing data*
   
 
 ## Algorithm for imputations
@@ -377,9 +403,45 @@ Imputation model
 * Iterations are repeated to ensure convergence of the algorithm
 
 
+## Iterations for data set 1
+
+**Plot of the iterations for generating the imputations for *Solar.R* a the first data set**
+
+```{r}
+set.seed(7876)
+imp1 <- mice(airquality, maxit = 10, print = F, m = 1)
+plot(imp1, y = "Solar.R", layout = c(1,1))[1]
+
+```
+
+## Iterations for data set 2
+
+**Plot of the iterations for generating the imputations for *Solar.R* a the second data set**
+
+```{r}
+set.seed(462)
+imp2 <- mice(airquality, maxit = 10, print = F, m = 1)
+plot(imp2, y = "Solar.R", layout = c(1,1))[1]
+
+```
+
+## Iterations for 5 imputed datasets
+
+**Plot of the iterations for generating the imputations for *Solar.R* a the second data set**
+
+```{r}
+set.seed(462)
+imp2 <- mice(airquality, maxit = 10, print = F, m = 5)
+plot(imp2, y = "Solar.R", layout = c(1,1))[1]
+
+```
+
+
 ## Iteration plot
 
-* To check the convergence of the algorithm
+*airquality example*
+
+* check the convergence of the algorithm for all imputed variables
 
 ```{r}
 imp <- mice(airquality, maxit = 10, print = F)
@@ -388,6 +450,8 @@ plot(imp)
 ```
 
 ## Iteration plot
+
+*airquality example*
 
 * Use additional iterations when in doubt if convergence is reached
 
@@ -400,6 +464,8 @@ plot(imp)
 
 ## Iteration plot
 
+*boys example*
+
 * Convergence may need more iterations
 
 ```{r, cache = T}
@@ -409,6 +475,8 @@ plot(imp, c("wgt", "gen", "tv"))
 ```
 
 ## Iteration plot
+
+*boys example*
 
 * Looks better for gen and tv, but there seems to be a problem for wgt. 
 
@@ -421,20 +489,20 @@ plot(imp, c("wgt", "gen", "tv"))
 ## Adapting imputation model
 
 * Changes in imputation model may be needed when:
- + Two variables are highly correlated (multi-collinearity)
- + A variable with so many missings that the imputations are unstable
+  + Two variables are highly correlated (multi-collinearity)
+  + A variable with so many missing values that the imputations are unstable
 
 
 ## Number of imputations
 
 * Theoretically, higher $m$ is better. 
-* Usually, use $m = 5$ for model building and $m ~ % missing data$ for final analysis. 
-* In lower $m$ the between-imputation-variance is enlarged by $1/m$ before computing the total variance.
+* Usually, use $m = 5$ for model building and $m$ *~ % missing data* for final analysis. 
+* In lower $m$ the between-imputation-variance is enlarged by $\frac{1}{m}$ before computing the total variance.
 
 
 ## Analysis phase
 
-* Each imputed dataset is analyzed, with the substantive analysis model
+* Each imputed data set is analyzed, with the substantive analysis model
 * This results in $m$ sets of results
 
 * Workflow:
@@ -457,7 +525,7 @@ summary(fit)
 * Pool the analysis results to obtain final parameter estimates.
 * Usual normally distributed parameters: Rubin's Rules
 
-## Pooling example
+## Pooling example {.smaller}
 
 ```{r}
 imp_pmm <- mice(airquality, method = "pmm", print = F)
@@ -469,9 +537,9 @@ pool(fit_mi)
 ## Pool output
 
 * **riv**: Relative increase in variance due to nonresponse
-* **df** Residual degrees of freedom for hypothesis testing
-* **lambda** Proportion of total variance due to missingness
-* **fmi** Fraction of missing information 
+* **df**: Residual degrees of freedom for hypothesis testing
+* **lambda**: Proportion of total variance due to missingness
+* **fmi**: Fraction of missing information for the parameter estimates
 
 
 ## Rubin's Rules
@@ -525,15 +593,15 @@ In the imputation phase, imputed values are estimated using an *imputation metho
 
 ## Methods for continuous variables
 
-* Regression imputation `method = norm.predict`
-* Stochastic regression imputation (regression + residual error) `method = norm.nob`
-* Stochastic regression with parameter uncertainty `method = norm`
-* Predictive mean matching `method = pmm`
+* Regression imputation: `norm.predict`
+* Stochastic regression imputation (regression + residual error): `norm.nob`
+* Stochastic regression with parameter uncertainty: `norm`
+* Predictive mean matching: `pmm`
 
 
-## Example data 
+## Example data {.smaller}
 
-```{r}
+```{r echo = FALSE}
 psych::describe(airquality) %>%
   kable() %>%
   kable_styling()
@@ -545,6 +613,7 @@ psych::describe(airquality) %>%
 
 * Parameters $\hat{\beta}_0$ and $\hat{\beta}_1$ are estimated from the observed data.
 
+* *And updated after the first imputation with the imputed data.*
 
 ## Regression imputation | Concept
 
@@ -567,14 +636,14 @@ ggplot(impr_long, aes(X1, X2, color = factor(R), group = factor(R)))+
 
 ``` 
 
-## Regression imputation | Univariate imputation
+## Regression imputation | Univariate imputation {.smaller}
 
 ```{r}
 imp_reg <- mice(airquality %>% select(Ozone, Solar.R), method = "norm.predict", print = F)
 xyplot(imp_reg, Ozone ~ Solar.R)
 ```
 
-## Regression imputation | Multivariate imputation
+## Regression imputation | Multivariate imputation {.smaller}
 
 ```{r}
 imp_reg <- mice(airquality,  method = "norm.predict", print = F)
@@ -587,9 +656,12 @@ xyplot(imp_reg, Ozone ~ Solar.R)
 
 * Parameters $\hat{\beta}_0$ and $\hat{\beta}_1$ are estimated from the observed data.
 
+* *And updated after the first imputation with the imputed data.*
+
 * $\epsilon$ is normally distributed residual error
 
-## Stochastic regression imputation | Concept
+
+## Stochastic regression imputation | Concept 
 
 ```{r echo=FALSE}
 
@@ -607,14 +679,14 @@ ggplot(impsr_long, aes(X1, X2, color = factor(R), group = factor(R)))+
 ``` 
 
 
-## Stochastic regression imputation | Univariate
+## Stochastic regression imputation | Univariate {.smaller}
 
 ```{r}
 imp_reg <- mice(airquality %>% select(Ozone, Solar.R), method = "norm.nob", print = F)
 xyplot(imp_reg, Ozone ~ Solar.R)
 ```
 
-## Stochastic regression imputation | Multivariate
+## Stochastic regression imputation | Multivariate {.smaller}
 
 ```{r}
 imp_reg <- mice(airquality, method = "norm.nob", print = F)
@@ -656,14 +728,14 @@ geom_point(size = 2)+
 ``` 
 
 
-## Bayesian regression imputation | Univariate
+## Bayesian regression imputation | Univariate {.smaller}
 
 ```{r}
 imp_breg <- mice(airquality %>% select(Ozone, Solar.R), method = "norm", print = F)
 xyplot(imp_breg, Ozone ~ Solar.R)
 ```
 
-## Bayesian regression imputation | Multivariate
+## Bayesian regression imputation | Multivariate {.smaller}
 
 ```{r}
 imp_breg <- mice(airquality, method = "norm", print = F)
@@ -725,14 +797,14 @@ geom_point(size = 2)+
 ``` 
 
 
-## Predictive mean matching | Univariate
+## Predictive mean matching | Univariate {.smaller}
 
 ```{r}
 imp_pmm <- mice(airquality %>% select(Ozone, Solar.R), method = "pmm", print = F)
 xyplot(imp_pmm, Ozone ~ Solar.R)
 ```
 
-## Predictive mean matching | Multivariate
+## Predictive mean matching | Multivariate {.smaller}
 
 ```{r}
 imp_pmm <- mice(airquality, method = "pmm", print = F)
@@ -742,9 +814,9 @@ xyplot(imp_pmm, Ozone ~ Solar.R)
 
 ## Methods for categorical data
 
-* Bayesian logistic regression `method = logreg`
-* Bayesian Polytomous regression `method = polyreg`
-* Classification and regression trees `method = cart`
+* Bayesian logistic regression: `logreg`
+* Bayesian polytomous regression: `polyreg`
+* Classification and regression trees: `cart`
 
 
 ## Bayesian logistic regression | Algorithm
@@ -778,7 +850,7 @@ geom_point(size = 2, alpha = 0.8)+
 
 
 
-## Bayesian logistic regression | Algorithm
+## Bayesian polytomous regression | Algorithm
 
 * Fit a multinomial regression model.
 
@@ -839,21 +911,21 @@ geom_point(size = 2)+
 ```
 
 
-## Classification and regression trees | Univariate
+## Classification and regression trees | Univariate {.smaller}
 
 ```{r}
 imp_rf <- mice(airquality %>% select(Ozone, Solar.R), method = "cart", print = F)
 xyplot(imp_rf, Ozone ~ Solar.R)
 ```
 
-## Classification and regression trees | Multivariate
+## Classification and regression trees | Multivariate {.smaller}
 
 ```{r}
 imp_rf <- mice(airquality, method = "cart", print = F)
 xyplot(imp_rf, Ozone ~ Solar.R)
 ```
 
-  
+
 # Software demo `mice` {data-background=Puzzle_zgnb3.jpg data-background-size=cover}
 
 
@@ -865,89 +937,7 @@ summary(nhanes2)
 ``` 
 
 
-## Multiple imputation
+## Multiple imputation {.smaller}
 
 ```{r eval = FALSE, include = TRUE}
 install.packages("mice")
-library(mice)
-```
-
-```{r}
-imp <-mice(nhanes2, m=5, maxit=10, seed = 800)
-```
-
-## predictor matrix
-
-```{r}
-imp$pred
-```
-
-Remove a predictor variable, e.g remove "bmi" as predictor for "chl".
-
-```{r}
-
-imp$pred["chl","bmi"] <- 0
-imp$pred
-
-pred_update <- imp$pred
-```
-
-## methode per variable
-
-```{r}
-imp$meth
-```
-
-Change the imputation method for one variable
-```{r}
-imp$meth["bmi"] <- "norm"
-imp$meth
-
-meth_update <- imp$meth
-```
-
-
-## Run with new settings
-
-```{r}
-imp_update <- mice(boys, m=5, maxit=10, pred=pred_update, meth=meth_update, seed = 90)
-
-```
-
-
-## Iteration plots
-
-```{r}
-plot(imp)
-```
-
-## View imputed values
-
-```{r}
-stripplot(imp)
-```
-
-## View imputed values linear
-
-```{r}
-xyplot(imp, chl ~ bmi)
-
-```
-
-## Analyze imputed data
-
-```{R}
-fit <- with(imp, lm(chl ~ age))
-
-```
-
-
-## Pool results
-
-```{r}
-
-pool(fit)
-
-```
-
-
