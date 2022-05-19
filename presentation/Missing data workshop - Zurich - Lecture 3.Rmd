@@ -33,14 +33,12 @@ library(dmo)
  
 ## Multiple Imputation
 
-* Imputation phase
-* Analysis phase
-* Pooling phase
+<center><img src="images/imp_process_with_text.png" height="330px" /></center>
 
-> 1. incomplete data
-> 2. generate multiple copies of the same dataset, but each time differenty imputed values
-> 3. analyze each imputed dataset
-> 4. pool results for analyses to final study result
+> 1. Incomplete data
+> 2. Generate multiple copies of the same dataset, but each time differenty imputed values
+> 3. Analyze each imputed dataset
+> 4. Pool results for analyses to final study result
 
 ## Notes on multiple imputation
 
@@ -50,15 +48,28 @@ library(dmo)
   + Holds the relevant variables to deal with missings
   + Is compatible with the analysis model
 
-
 # Full Information Maximum Likelihood {data-background=Puzzle_zgnb3.jpg data-background-size=cover}
 
-## How does it work
+## How does it work {.smaller}
 
 * Uses all observed data, so also partly observed rows, to estimate model parameters.
 * Analysis and dealing with missing data, at once
-* Different ways to estimate, for example EM algorithm
 * Only involves variables used in the analysis
+* Algorithm used to estimate the parameters that most likely have generated the observed data.
+* Iterative algorithm, such as Expectation Maximization (EM) or Maximum Likelihood (ML)
+  + Each iteration, new parameters are evaluated/updated, until the fit with the data is maximized (does not improve anymore).
+  + The fit is maximized when the likelihood function is maximized, i.e. when the data generated from the model parameters are closest to the observed data.
+
+## Note on FIML use
+
+* Can be used to impute single values
+  + Be aware that this leads to similar disadvantages as regression imputation
+  + Not advised to use this method to obtain a fully observed dataset
+
+* Best used for model estimations
+  + All observed information is used to estimate the best fitting parameters.
+  + Estimation is done by an iterative algorithm
+  + Similar information is used as in multiple imputation (if model holds same information), so results are comparable.
 
 
 ## FIML in `lavaan` {.smaller}
@@ -103,13 +114,13 @@ Output is quite large and gives a lot of information at once.
 
 Use `fmi = TRUE` in the `summary()` function to get fraction of missing information. 
 
-fmi = the relative increase in variance and decrease of precision due to missing data, i.e. impact of missing data on estimates.
+**fmi** = the relative increase in variance and decrease of precision due to missing data, i.e. impact of missing data on estimates.
 
 ## Missing data patterns 
 
-* Missing data patterns in the data
+Missing data patterns in the data
 
-```{r}
+```{r echo = TRUE}
 
 inspect(fit, 'patterns') 
 
@@ -118,15 +129,15 @@ inspect(fit, 'patterns')
 
 ## Missing data proportions
 
-* A symmetric matrix where each element contains the proportion of observed datapoints for the corresponding pair of observed variables.
+A symmetric matrix where each element contains the proportion of observed data points for the corresponding pair of observed variables.
 
-```{r}
+```{r echo = TRUE}
 inspect(fit, 'coverage')
 ```
 
-## Linear regression analysis {.smaller}
+## Linear regression analysis | code {.smaller}
 
-```{r}
+```{r eval=FALSE, echo = TRUE}
 model <- '
   Ozone ~ Solar.R 
   '
@@ -134,16 +145,27 @@ fit_fiml <- sem(model, data = airquality, missing = "fiml")
 summary(fit_fiml, header = FALSE, fmi = TRUE)
 ```
 
+## Linear regression analysis | output {.smaller}
+
+```{r echo = FALSE}
+model <- '
+  Ozone ~ Solar.R 
+  '
+fit_fiml <- sem(model, data = airquality, missing = "fiml")
+summary(fit_fiml, header = FALSE, fmi = TRUE)
+```
+
+
 ## Compare with MI {.smaller}
 
-```{r}
+```{r echo = TRUE}
 imp_pmm <- mice(airquality %>% select(Ozone, Solar.R), method = "pmm", print = F)
 fit_mi <- with(imp_pmm, lm(Ozone ~ Solar.R))
 combi <- pool(fit_mi)
 summary(combi)
 ```
 
-## SEM with auxiliary variables {.smaller}
+## SEM with auxiliary variables | code {.smaller}
 
 * Use auxiliary variables to improve missing data handling
 * Auxiliary variables to covariances in the model
@@ -160,7 +182,7 @@ model_aux <- '
 auxfit1 <- sem(model = model_aux, missing = "fiml", data = airquality)
 ```
 
-## SEM with auxiliary variables {.smaller}
+## SEM with auxiliary variables | output {.smaller}
 
 ```{r, echo = FALSE}
 summary(auxfit1, header = FALSE, fmi = TRUE)
@@ -168,7 +190,7 @@ summary(auxfit1, header = FALSE, fmi = TRUE)
 
 
 
-## SEM with auxiliary variables {.smaller}
+## SEM with auxiliary variables | code {.smaller}
 
 * Easily add auxiliary variables with `semTools` package
 
@@ -179,7 +201,7 @@ auxfit <- sem.auxiliary(model=model, missing = "fiml", aux=aux.vars, fixed.x=FAL
 ```
 
 
-## SEM with auxiliary variables {.smaller}
+## SEM with auxiliary variables | output {.smaller}
 
 ```{r echo = FALSE}
 summary(auxfit, header = FALSE, fmi = TRUE)
@@ -189,7 +211,7 @@ summary(auxfit, header = FALSE, fmi = TRUE)
 
 ## Compare with MI {.smaller}
 
-```{r}
+```{r echo = TRUE}
 imp_pmm <- mice(airquality, method = "pmm", print = F)
 fit_mi <- with(imp_pmm, lm(Ozone ~ Solar.R))
 combi <- pool(fit_mi)
@@ -198,14 +220,18 @@ summary(combi)
 ```
 
 
-
-# Mssing data in questionnaires {data-background=Puzzle_zgnb3.jpg data-background-size=cover}
+# Missing data in questionnaires {data-background=Puzzle_zgnb3.jpg data-background-size=cover}
 
 ## Multi-item questionnaires
 
 * Constructs measured indirectly, through items.
-* Item can be continuous, dichotomous or measured on Likert scale.
+* Item score can be continuous, dichotomous or measured on Likert scale.
 * Summary score of items is the construct
+
+<br>
+<center><img src="images/2978479.jpg" height="320px" /></center>
+
+
 
 ## Summarizing item scores
 
@@ -226,14 +252,18 @@ data.frame(item1 = c(1,NA,NA), item2 = c(0,1,NA), item3 = c(0, 0, NA), item4 = c
 **Both lead to a missing total score**
 
 
-## Advice in user manuals
+## Advice in user manuals {.build}
 
+<div>
 * User manuals often have a statement about dealing with missing items scores
 * This method is not always evidence-based
+</div>
+
+<div>
 * Examples:
   + SF-36: "*Items that are left blank (missing data) are not taken into account when calculating the scale scores. Hence, scale scores represent the average for all items in the scale that the respondent answered.*" (Ware & Sherbourne, 1992)
   + SDQ: "*The SDQ comprises of 5 items for 5 subscales. For each of the 5 scales the score can range from 0 to 10 if all items were completed. These scores can be scaled up pro-rata if at least 3 items were completed, e.g. a score of 4 based on 3 completed items can be scaled up to a score of 7 (6.67 rounded up) for 5 items."* (Goodman, 2010)
-  
+</div>
 
 ## Person mean imputation
 
@@ -286,6 +316,7 @@ x <-data[1:5,c(1:5, 11)]
 x
 ```
 
+<div>
 ```{r echo=TRUE}
 x %>% 
   #compute average over available items (AAI)
@@ -296,12 +327,13 @@ x %>%
   mutate(TSQ1 = rowSums(select(.,Q1i1, Q1i2, Q1i3, Q1i4, Q1i5)))
 ```
 
+</div>
 ## Note on person mean imputation
 
 * Can get unstable when:
   + Many items are missing.
   + Correlations between items is low.
-* Single imputation method, no missing data uncertainty.
+* Single imputation method: no missing data uncertainty.
 
 ## Multiple imputation in multi-item questionnaires
 
@@ -311,8 +343,8 @@ x %>%
 
 ## Advised strategy for imputation
 
-* When there are item scores observed, use item level imputation
-* When only few item scores or none, use total score imputation
+* Majority of item scores observed, use item level imputation
+* Only few item scores observed or none, use total score imputation
 * Combine both strategies
 
 ## Challenges in multi-item questionnaire missings
@@ -331,11 +363,15 @@ x %>%
 
 * Update total score after each iteration by using **passive imputation**.
 
-## Illustration item and total scores {.smaller}
+## Illustration item and total scores {.smaller .build}
 
-* Data set with two questionnaires each 5 items, and 1 covariate.
+<div>
 * Isolate item imputation per questionnaire or subscale.
 * Use predictor matrix: rows indicate imputed variable, columns are predictors.
+</div>
+
+<div>
+* Data set with two questionnaires each 5 items, and 1 covariate.
 
 For Q1:
 ```{r}
@@ -343,7 +379,7 @@ predQ <- make.predictorMatrix(data)
 predQ[1:5,6:10] <- 0
 predQ[1:5,]
 ```
-
+</div>
 
 ## Illustration item and total scores {.smaller}
 
@@ -410,25 +446,29 @@ predQ
 
 **During each iteration for Q1:**
 
+<div>
 1\. Impute item scores using items from its own questionnaire, total score(s) from other questionnaires and covariate(s).
 
   * $Q1i1_i = Q1i2_i + Q1i3_i + Q1i4_i + Q1i5_i + TSQ2_i + cov1_i$
   * $Q1i2_i = Q1i1_i + Q1i3_i + Q1i4_i + Q1i5_i + TSQ2_i + cov1_i$
   * $etc.$
-  
+</div>
+
+<div>
 2\. Total score is re-calculated using the imputed item scores.
 
   * $TSQ1_i = Q1i1_i + Q1i2_i + Q1i3_i + Q1i4_i + Q1i5_i$
-  
+</div>
+<div>
 3\. Updated total score is used as predictor for covariate(s) and items of other questionnaires in next iteration.
 
   * $Q2i1_i =  Q2i2_i + Q2i3_i + Q2i4_i + Q2i5_i + TSQ1_i + cov1_i$
-
+</div>
 
 *Note the $_i$ indicates impute value from the previous iteration.*
 
 ## Passive imputation code {.smaller .build}
-
+<div>
 * Change the imputation method for the total scores.
 
 ```{r}
@@ -437,13 +477,18 @@ methodQ <- imp0$method
 methodQ[c("TSQ1", "TSQ2")]
 ```
 
+</div>
+
+<div>
+* The total score is calculated as the sum of the items.
+
 ```{r}
 methodQ["TSQ1"] <- "~I(Q1i1 + Q1i2 + Q1i3 + Q1i4 + Q1i5)"
 methodQ["TSQ2"] <- "~I(Q2i1 + Q2i2 + Q2i3 + Q2i4 + Q2i5)"
 methodQ[c("TSQ1", "TSQ2")]
 
 ```
-
+</div>
 
 ## Missing data in IRT models
 
@@ -455,9 +500,12 @@ methodQ[c("TSQ1", "TSQ2")]
 
 * Full Information Maximum Likelihood estimation
 * In `R` the `lavaan` package - simulates Mplus
+* When total scores are analyzed, item information can be included as *auxiliary variables* in the SEM model.
 
 
 ## Missing item scores
+
+Summary
 
 * Item level information may need a different strategy in order to use all available information
 * When there are missing values at item level only, use a strategy that involves the item scores.
@@ -583,6 +631,7 @@ wide_pred[c("cov1_T0", "cov1_T1", "cov1_T2"), 3:14]
 
 ## Imputation of long data
 
+* Multiple rows per subject in the data
 * Multilevel imputation
 * Account for the clustering of measurements within subjects
 
@@ -616,28 +665,31 @@ long_meth
 
 ## FIML for missing outcomes
 
-* Missings in dependent variable solved in Maximum likelihood estimation
+* Longitudinal analysis model with FIML estimation: multilevel model
+* Missing data in dependent variable solved in Maximum likelihood estimation
   + $Outcome = \beta_0 + \beta_1*cov2 + b_{0j} + \epsilon_{ij}$
   + $b_{0j}$ is random intercept at subject level
-* Estimation method optimizes model parameter using *all* observed data of dependent variable
+* Estimation method optimizes model parameters using *all* observed data of dependent variable
 
 *Missing covariate data are handled by listwise deletion*
 
-## Example no imputation {.smaller}
-
+## Example no imputation {.smaller .build}
+<div>
 * Only cov1 has missing data
 * Outcome variable has missing observations (drop-out)
 
 ```{r}
 md.pattern(longexmc, plot = F)
 ```
+</div>
 
+<div>
 ```{r}
 fit1 <- lme4::lmer(outcome ~ cov2 + (1|id), data = longexmc)
 tidy(fit1, conf.int = T)
 
 ```
-
+</div>
 ## Example with imputation
 
 * Impute the outcome (and cov1) as comparison.
@@ -648,3 +700,12 @@ fitmi <- with(mlimp, lmer(outcome ~ cov2 + (1|id)))
 combi <- pool(fitmi)
 summary(combi)
 ```
+
+
+## Longitudinal missing data 
+
+Summary
+
+* Missing in dependent variable are handled in multilevel analysis model
+* Regular multiple imputation to wide data when possible
+* Multilevel multiple imputation to deal with missing covariates when design is more complicated for wide imputation
