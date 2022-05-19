@@ -19,13 +19,18 @@ library(dmo)
 library(mice)
 ```
 
-# Mssing data in questionnaires {data-background=Puzzle_zgnb3.jpg data-background-size=cover}
+# Missing data in questionnaires {data-background=Puzzle_zgnb3.jpg data-background-size=cover}
 
 ## Multi-item questionnaires
 
 * Constructs measured indirectly, through items.
-* Item can be continuous, dichotomous or measured on Likert scale.
+* Item score can be continuous, dichotomous or measured on Likert scale.
 * Summary score of items is the construct
+
+<br>
+<center><img src="images/2978479.jpg" height="320px" /></center>
+
+
 
 ## Summarizing item scores
 
@@ -46,14 +51,18 @@ data.frame(item1 = c(1,NA,NA), item2 = c(0,1,NA), item3 = c(0, 0, NA), item4 = c
 **Both lead to a missing total score**
 
 
-## Advice in user manuals
+## Advice in user manuals {.build}
 
+<div>
 * User manuals often have a statement about dealing with missing items scores
 * This method is not always evidence-based
+</div>
+
+<div>
 * Examples:
   + SF-36: "*Items that are left blank (missing data) are not taken into account when calculating the scale scores. Hence, scale scores represent the average for all items in the scale that the respondent answered.*" (Ware & Sherbourne, 1992)
   + SDQ: "*The SDQ comprises of 5 items for 5 subscales. For each of the 5 scales the score can range from 0 to 10 if all items were completed. These scores can be scaled up pro-rata if at least 3 items were completed, e.g. a score of 4 based on 3 completed items can be scaled up to a score of 7 (6.67 rounded up) for 5 items."* (Goodman, 2010)
-  
+</div>
 
 ## Person mean imputation
 
@@ -106,6 +115,7 @@ x <-data[1:5,c(1:5, 11)]
 x
 ```
 
+<div>
 ```{r echo=TRUE}
 x %>% 
   #compute average over available items (AAI)
@@ -116,12 +126,13 @@ x %>%
   mutate(TSQ1 = rowSums(select(.,Q1i1, Q1i2, Q1i3, Q1i4, Q1i5)))
 ```
 
+</div>
 ## Note on person mean imputation
 
 * Can get unstable when:
   + Many items are missing.
   + Correlations between items is low.
-* Single imputation method, no missing data uncertainty.
+* Single imputation method: no missing data uncertainty.
 
 ## Multiple imputation in multi-item questionnaires
 
@@ -131,8 +142,8 @@ x %>%
 
 ## Advised strategy for imputation
 
-* When there are item scores observed, use item level imputation
-* When only few item scores or none, use total score imputation
+* Majority of item scores observed, use item level imputation
+* Only few item scores observed or none, use total score imputation
 * Combine both strategies
 
 ## Challenges in multi-item questionnaire missings
@@ -151,11 +162,15 @@ x %>%
 
 * Update total score after each iteration by using **passive imputation**.
 
-## Illustration item and total scores {.smaller}
+## Illustration item and total scores {.smaller .build}
 
-* Data set with two questionnaires each 5 items, and 1 covariate.
+<div>
 * Isolate item imputation per questionnaire or subscale.
 * Use predictor matrix: rows indicate imputed variable, columns are predictors.
+</div>
+
+<div>
+* Data set with two questionnaires each 5 items, and 1 covariate.
 
 For Q1:
 ```{r}
@@ -163,7 +178,7 @@ predQ <- make.predictorMatrix(data)
 predQ[1:5,6:10] <- 0
 predQ[1:5,]
 ```
-
+</div>
 
 ## Illustration item and total scores {.smaller}
 
@@ -230,25 +245,29 @@ predQ
 
 **During each iteration for Q1:**
 
+<div>
 1\. Impute item scores using items from its own questionnaire, total score(s) from other questionnaires and covariate(s).
 
   * $Q1i1_i = Q1i2_i + Q1i3_i + Q1i4_i + Q1i5_i + TSQ2_i + cov1_i$
   * $Q1i2_i = Q1i1_i + Q1i3_i + Q1i4_i + Q1i5_i + TSQ2_i + cov1_i$
   * $etc.$
-  
+</div>
+
+<div>
 2\. Total score is re-calculated using the imputed item scores.
 
   * $TSQ1_i = Q1i1_i + Q1i2_i + Q1i3_i + Q1i4_i + Q1i5_i$
-  
+</div>
+<div>
 3\. Updated total score is used as predictor for covariate(s) and items of other questionnaires in next iteration.
 
   * $Q2i1_i =  Q2i2_i + Q2i3_i + Q2i4_i + Q2i5_i + TSQ1_i + cov1_i$
-
+</div>
 
 *Note the $_i$ indicates impute value from the previous iteration.*
 
 ## Passive imputation code {.smaller .build}
-
+<div>
 * Change the imputation method for the total scores.
 
 ```{r}
@@ -257,13 +276,18 @@ methodQ <- imp0$method
 methodQ[c("TSQ1", "TSQ2")]
 ```
 
+</div>
+
+<div>
+* The total score is calculated as the sum of the items.
+
 ```{r}
 methodQ["TSQ1"] <- "~I(Q1i1 + Q1i2 + Q1i3 + Q1i4 + Q1i5)"
 methodQ["TSQ2"] <- "~I(Q2i1 + Q2i2 + Q2i3 + Q2i4 + Q2i5)"
 methodQ[c("TSQ1", "TSQ2")]
 
 ```
-
+</div>
 
 ## Missing data in IRT models
 
@@ -275,9 +299,12 @@ methodQ[c("TSQ1", "TSQ2")]
 
 * Full Information Maximum Likelihood estimation
 * In `R` the `lavaan` package - simulates Mplus
+* When total scores are analyzed, item information can be included as *auxiliary variables* in the SEM model.
 
 
 ## Missing item scores
+
+Summary
 
 * Item level information may need a different strategy in order to use all available information
 * When there are missing values at item level only, use a strategy that involves the item scores.
