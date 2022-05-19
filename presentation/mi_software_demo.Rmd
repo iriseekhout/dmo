@@ -22,6 +22,23 @@ library(haven)
 
 # Software demo `mice` {data-background=Puzzle_zgnb3.jpg data-background-size=cover}
 
+## `mice`
+
+```{r eval=FALSE, echo = TRUE}
+library(mice)
+help(mice)
+
+```
+
+Most important arguments in `mice()`
+
+* `m`: number of multiple imputations
+* `method`: imputation method 
+* `predictorMatrix`: matrix where value of 1 means that the column variable is used as a predictor for the target in the rows.
+* `maxit`: number of iterations
+* `seed`: offsetting the random number generator
+
+
 
 ## Summary of data
 
@@ -33,10 +50,6 @@ summary(nhanes2)
 
 ## Multiple imputation {.smaller}
 
-```{r eval = FALSE, include = TRUE}
-install.packages("mice")
-library(mice)
-```
 
 ```{r}
 imp <-mice(nhanes2, m=5, maxit=10, seed = 800)
@@ -47,6 +60,8 @@ imp <-mice(nhanes2, m=5, maxit=10, seed = 800)
 ```{r}
 imp$pred
 ```
+
+## predictor matrix {.smaller}
 
 Remove a predictor variable, e.g remove "bmi" as predictor for "chl".
 
@@ -76,7 +91,7 @@ meth_update <- imp$meth
 ## Run with new settings {.smaller}
 
 ```{r}
-imp_update <- mice(boys, m=5, maxit=10, pred=pred_update, meth=meth_update, seed = 90)
+imp_update <- mice(nhanes2, m=5, maxit=10, pred=pred_update, meth=meth_update, seed = 90)
 
 ```
 
@@ -105,6 +120,12 @@ xyplot(imp, chl ~ bmi)
 ```{R}
 fit <- with(imp, lm(chl ~ age))
 
+```
+
+## View separate analysis results {.smaller}
+
+```{R}
+summary(fit)
 ```
 
 
