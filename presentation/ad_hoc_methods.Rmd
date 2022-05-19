@@ -56,7 +56,7 @@ The methods to deal with missing data, implicitly assume a missing data mechanis
 
 # Ad hoc missing data methods {data-background=Puzzle_zgnb3.jpg data-background-size=cover}
 
-## Complete-case analysis
+## Complete-case analysis {.build}
 
 **Complete-case analysis (CCA)**: only the cases with observed data for all variables involved are used in the analysis. 
 
@@ -129,7 +129,7 @@ ggplot()+
 
 ## Imputation {.build}
 
-**Imputation:** relpacing the missing with a value. 
+**Imputation:** replacing the missing with a value. 
 
 *Possible values to impute?*
 
@@ -165,8 +165,9 @@ dmo::perform %>% group_by(gender) %>% summarise(n = n(),
   kable_styling(full_width = FALSE, position = "left") %>%
   add_header_above(c(" " = 2, "Weight" = 3, "Performance" = 3))
 
-ggplot(perform, aes(x = weight, y = performance, group = gender, color = gender)) +
-  geom_point()
+ggplot(dmo::perform) +
+  geom_point(aes(x = weight, y = performance, group = gender, color = gender))+
+  scale_colour_manual(values=c("dodgerblue", "hotpink"))
 
 ```
 
@@ -195,13 +196,13 @@ ggplot(id_mn, aes(weight, performance, color = factor(Rperf), group = factor(Rpe
 
 ```
 
-## Regression imputation {.smaller}
+## Regression imputation
 
-Conditional mean imputation, estimating the imputed value as a predicted value from a regression model:
+**Conditional mean imputation**: estimate the imputed value as a predicted value from a regression model:
 $Y_{imp} = \beta_0 + \beta_1 * X$
 
 
-Parameter estimates: 
+**Parameter estimates**: 
 
 * Mean is unbiased when MAR
 * Regression weight is unbiased when MAR
@@ -235,13 +236,13 @@ ggplot(data = perform, aes(weight, performance, group = gender))+
 <!--
 https://statisticsglobe.com/regression-imputation-stochastic-vs-deterministic/
 -->
-Stochastic regressions: = regression imputation, with additional sampling error added to the predicted value:
+**Stochastic regressions**: regression imputation, with additional sampling error added to the predicted value:
 
 * $Y_{imp} = \beta_0 + \beta_1 * X + \epsilon$
 
 Sampling error is normally distributed.
 
-Parameter estimates:
+**Parameter estimates**:
 
 * Mean is unbiased when MAR
 * Regression weight is unbiased when MAR
@@ -274,12 +275,18 @@ ggplot(data = perform, aes(weight, performance, group = gender))+
 
 Ad hoc method for longitudinal data: use the previous observed value to impute the missing values.
 
-Assumes that people that drop out of the study remain stable.
+* Assumes that people that drop out of the study remain stable.
 
-* Mean, regression coefficient and correlation is never unbiased.
+
+**Parameter estimates**:
+
+* Mean is biased
+* Regression is biased
+* Correlation is biased
 * Standard errors are underestimated
 
-## Example data {.smaller}
+
+## Example longitudinal data {.smaller}
 
 * A RCT for a weight loss intervention. 
 * Measurements at baseline, mid-treatment (3m), post-treatment (6m), and two follow-up moments (12m and 24m).
