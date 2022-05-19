@@ -137,6 +137,7 @@ wide_pred[c("cov1_T0", "cov1_T1", "cov1_T2"), 3:14]
 
 ## Imputation of long data
 
+* Multiple rows per subject in the data
 * Multilevel imputation
 * Account for the clustering of measurements within subjects
 
@@ -170,28 +171,31 @@ long_meth
 
 ## FIML for missing outcomes
 
-* Missings in dependent variable solved in Maximum likelihood estimation
+* Longitudinal analysis model with FIML estimation: multilevel model
+* Missing data in dependent variable solved in Maximum likelihood estimation
   + $Outcome = \beta_0 + \beta_1*cov2 + b_{0j} + \epsilon_{ij}$
   + $b_{0j}$ is random intercept at subject level
-* Estimation method optimizes model parameter using *all* observed data of dependent variable
+* Estimation method optimizes model parameters using *all* observed data of dependent variable
 
 *Missing covariate data are handled by listwise deletion*
 
-## Example no imputation {.smaller}
-
+## Example no imputation {.smaller .build}
+<div>
 * Only cov1 has missing data
 * Outcome variable has missing observations (drop-out)
 
 ```{r}
 md.pattern(longexmc, plot = F)
 ```
+</div>
 
+<div>
 ```{r}
 fit1 <- lme4::lmer(outcome ~ cov2 + (1|id), data = longexmc)
 tidy(fit1, conf.int = T)
 
 ```
-
+</div>
 ## Example with imputation
 
 * Impute the outcome (and cov1) as comparison.
@@ -202,3 +206,12 @@ fitmi <- with(mlimp, lmer(outcome ~ cov2 + (1|id)))
 combi <- pool(fitmi)
 summary(combi)
 ```
+
+
+## Longitudinal missing data 
+
+Summary
+
+* Missing in dependent variable are handled in multilevel analysis model
+* Regular multiple imputation to wide data when possible
+* Multilevel multiple imputation to deal with missing covariates when design is more complicated for wide imputation

@@ -9,7 +9,7 @@
 
 
 
-  <meta name="date" content="2022-05-05" />
+  <meta name="date" content="2022-05-19" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -3278,7 +3278,7 @@ slide:not(.current) .plotly.html-widget{
       <h1 data-config-title><!-- populated from slide_config.json --></h1>
       <h2 data-config-subtitle><!-- populated from slide_config.json --></h2>
       <p data-config-presenter><!-- populated from slide_config.json --></p>
-            <p style="margin-top: 6px; margin-left: -2px;">2022-05-05</p>
+            <p style="margin-top: 6px; margin-left: -2px;">2022-05-19</p>
           </hgroup>
   </slide>
 
@@ -3415,6 +3415,7 @@ wide_pred[c(&quot;cov1_T0&quot;, &quot;cov1_T1&quot;, &quot;cov1_T2&quot;), 3:14
 </article></slide><slide class=""><hgroup><h2>Imputation of long data</h2></hgroup><article  id="imputation-of-long-data">
 
 <ul>
+<li>Multiple rows per subject in the data</li>
 <li>Multilevel imputation</li>
 <li>Account for the clustering of measurements within subjects</li>
 </ul>
@@ -3462,23 +3463,24 @@ long_meth</pre>
 </article></slide><slide class=""><hgroup><h2>FIML for missing outcomes</h2></hgroup><article  id="fiml-for-missing-outcomes">
 
 <ul>
-<li>Missings in dependent variable solved in Maximum likelihood estimation
+<li>Longitudinal analysis model with FIML estimation: multilevel model</li>
+<li>Missing data in dependent variable solved in Maximum likelihood estimation
 
 <ul>
 <li>\(Outcome = \beta_0 + \beta_1*cov2 + b_{0j} + \epsilon_{ij}\)</li>
 <li>\(b_{0j}\) is random intercept at subject level</li>
 </ul></li>
-<li>Estimation method optimizes model parameter using <em>all</em> observed data of dependent variable</li>
+<li>Estimation method optimizes model parameters using <em>all</em> observed data of dependent variable</li>
 </ul>
 
 <p><em>Missing covariate data are handled by listwise deletion</em></p>
 
-</article></slide><slide class=""><hgroup><h2>Example no imputation</h2></hgroup><article  id="example-no-imputation" class="smaller">
+</article></slide><slide class=""><hgroup><h2>Example no imputation</h2></hgroup><article  id="example-no-imputation" class="smaller build">
 
+<div>
 <ul>
 <li>Only cov1 has missing data</li>
 <li>Outcome variable has missing observations (drop-out)</li>
-<li>Analysis relation cov2 with outcome</li>
 </ul>
 
 <pre class = 'prettyprint lang-r'>md.pattern(longexmc, plot = F)</pre>
@@ -3488,8 +3490,9 @@ long_meth</pre>
 &gt; 20   1     1    1    1    1    1       0  1
 &gt; 18   1     1    1    1    1    0       1  1
 &gt; 1    1     1    1    1    1    0       0  2
-&gt;      0     0    0    0    0   19      21 40</pre>
+&gt;      0     0    0    0    0   19      21 40</pre></div>
 
+<div>
 <pre class = 'prettyprint lang-r'>fit1 &lt;- lme4::lmer(outcome ~ cov2 + (1|id), data = longexmc)
 tidy(fit1, conf.int = T)</pre>
 
@@ -3499,7 +3502,7 @@ tidy(fit1, conf.int = T)</pre>
 &gt; 1 fixed    &lt;NA&gt;     (Intercept)    1.06       0.130     8.10     0.801     1.31 
 &gt; 2 fixed    &lt;NA&gt;     cov2           0.0190     0.115     0.166   -0.206     0.244
 &gt; 3 ran_pars id       sd__(Interc~   0.589     NA        NA       NA        NA    
-&gt; 4 ran_pars Residual sd__Observa~   1.11      NA        NA       NA        NA</pre>
+&gt; 4 ran_pars Residual sd__Observa~   1.11      NA        NA       NA        NA</pre></div>
 
 </article></slide><slide class=""><hgroup><h2>Example with imputation</h2></hgroup><article  id="example-with-imputation">
 
