@@ -26,12 +26,26 @@ library(semTools)
 
 # Full Information Maximum Likelihood {data-background=Puzzle_zgnb3.jpg data-background-size=cover}
 
-## How does it work
+## How does it work {.smaller}
 
 * Uses all observed data, so also partly observed rows, to estimate model parameters.
 * Analysis and dealing with missing data, at once
-* Different ways to estimate, for example EM algorithm
 * Only involves variables used in the analysis
+* Algorithm used to estimate the parameters that most likely have generated the observed data.
+* Iterative algorithm, such as Expectation Maximization (EM) or Maximum Likelihood (ML)
+  + Each iteration, new parameters are evaluated/updated, until the fit with the data is maximized (does not improve anymore).
+  + The fit is maximized when the likelihood function is maximized, i.e. when the data generated from the model parameters are closest to the observed data.
+
+## Note on FIML use
+
+* Can be used to impute single values
+  + Be aware that this leads to similar disadvantages as regression imputation
+  + Not advised to use this method to obtain a fully observed dataset
+
+* Best used for model estimations
+  + All observed information is used to estimate the best fitting parameters.
+  + Estimation is done by an iterative algorithm
+  + Similar information is used as in multiple imputation (if model holds same information), so results are comparable.
 
 
 ## FIML in `lavaan` {.smaller}
@@ -76,13 +90,13 @@ Output is quite large and gives a lot of information at once.
 
 Use `fmi = TRUE` in the `summary()` function to get fraction of missing information. 
 
-fmi = the relative increase in variance and decrease of precision due to missing data, i.e. impact of missing data on estimates.
+**fmi** = the relative increase in variance and decrease of precision due to missing data, i.e. impact of missing data on estimates.
 
 ## Missing data patterns 
 
-* Missing data patterns in the data
+Missing data patterns in the data
 
-```{r}
+```{r echo = TRUE}
 
 inspect(fit, 'patterns') 
 
@@ -91,15 +105,15 @@ inspect(fit, 'patterns')
 
 ## Missing data proportions
 
-* A symmetric matrix where each element contains the proportion of observed datapoints for the corresponding pair of observed variables.
+A symmetric matrix where each element contains the proportion of observed data points for the corresponding pair of observed variables.
 
-```{r}
+```{r echo = TRUE}
 inspect(fit, 'coverage')
 ```
 
-## Linear regression analysis {.smaller}
+## Linear regression analysis | code {.smaller}
 
-```{r}
+```{r eval=FALSE, echo = TRUE}
 model <- '
   Ozone ~ Solar.R 
   '
@@ -107,16 +121,27 @@ fit_fiml <- sem(model, data = airquality, missing = "fiml")
 summary(fit_fiml, header = FALSE, fmi = TRUE)
 ```
 
+## Linear regression analysis | output {.smaller}
+
+```{r echo = FALSE}
+model <- '
+  Ozone ~ Solar.R 
+  '
+fit_fiml <- sem(model, data = airquality, missing = "fiml")
+summary(fit_fiml, header = FALSE, fmi = TRUE)
+```
+
+
 ## Compare with MI {.smaller}
 
-```{r}
+```{r echo = TRUE}
 imp_pmm <- mice(airquality %>% select(Ozone, Solar.R), method = "pmm", print = F)
 fit_mi <- with(imp_pmm, lm(Ozone ~ Solar.R))
 combi <- pool(fit_mi)
 summary(combi)
 ```
 
-## SEM with auxiliary variables {.smaller}
+## SEM with auxiliary variables | code {.smaller}
 
 * Use auxiliary variables to improve missing data handling
 * Auxiliary variables to covariances in the model
@@ -133,7 +158,7 @@ model_aux <- '
 auxfit1 <- sem(model = model_aux, missing = "fiml", data = airquality)
 ```
 
-## SEM with auxiliary variables {.smaller}
+## SEM with auxiliary variables | output {.smaller}
 
 ```{r, echo = FALSE}
 summary(auxfit1, header = FALSE, fmi = TRUE)
@@ -141,7 +166,7 @@ summary(auxfit1, header = FALSE, fmi = TRUE)
 
 
 
-## SEM with auxiliary variables {.smaller}
+## SEM with auxiliary variables | code {.smaller}
 
 * Easily add auxiliary variables with `semTools` package
 
@@ -152,7 +177,7 @@ auxfit <- sem.auxiliary(model=model, missing = "fiml", aux=aux.vars, fixed.x=FAL
 ```
 
 
-## SEM with auxiliary variables {.smaller}
+## SEM with auxiliary variables | output {.smaller}
 
 ```{r echo = FALSE}
 summary(auxfit, header = FALSE, fmi = TRUE)
@@ -162,7 +187,7 @@ summary(auxfit, header = FALSE, fmi = TRUE)
 
 ## Compare with MI {.smaller}
 
-```{r}
+```{r echo = TRUE}
 imp_pmm <- mice(airquality, method = "pmm", print = F)
 fit_mi <- with(imp_pmm, lm(Ozone ~ Solar.R))
 combi <- pool(fit_mi)
