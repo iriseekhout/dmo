@@ -29,7 +29,7 @@ theme_set(theme_light())
 
 * Imputing the missing data entries with multiple "plausible" values.
 * Takes imputation uncertainty into account
-* A method to improve the main analysis results, *so not to get a fully observed data set*.
+* A method to improve the main **analysis results**, *so having a fully observed data set is not the goal*.
   + Unbiased estimates
   + More precision and thus power
 * R package: `mice`
@@ -41,10 +41,10 @@ theme_set(theme_light())
 * Analysis phase
 * Pooling phase
 
-> 1. incomplete data
-> 2. generate multiple copies of the same dataset, but each time differenty imputed values
-> 3. analyze each imputed dataset
-> 4. pool results for analyses to final study result
+> 1. Incomplete data
+> 2. Generate multiple copies of the same dataset, but each time differenty imputed values
+> 3. Analyze each imputed dataset
+> 4. Pool results for analyses to final study result
 
 ## Multiple Imputation process
 
@@ -55,7 +55,7 @@ theme_set(theme_light())
 ## Imputation phase
 
 * Imputing the missing data entries with multiple "plausible" values
-* Specify the imputation model 
+* Specify the **imputation model** 
   + method to estimate imputed values
   + predictors used in the model
   + *can both be specified for each variable with missing data*
@@ -63,15 +63,25 @@ theme_set(theme_light())
 
 ## Algorithm for imputations
 
-* Fully Conditional Specification (FCS): imputes variable-by-variable.
+Fully Conditional Specification (FCS): imputes variable-by-variable.
+
 * For each variable the imputation model can be different:
   + method
   + predictors
+* Flexible method and allows imputations close to the data
 
-* Joint modelling: imputes from a multivariate distribution
+Joint modelling: imputes from a multivariate distribution.
+
+* Computationally less intensive.
+* Good theoretical unterpinnings, provided that the model fits well with the data.
 
 
-## General method 
+`mice` uses FCS
+
+
+## General method FCS
+
+Per variable with missing data:
 
 * Impute missing value by using the predicted value estimated from observed data.
 * Add residual error to simulate sampling error
@@ -80,11 +90,12 @@ theme_set(theme_light())
 > Later more on methods
 
 
+
 ## Predictors for imputation
 
-Imputation model 
+Imputation model = method + predictors
 
-* For each variable, the most relevant predictors can be indicated
+* For each variable, the most relevant *predictors* can be indicated
 * Use variables that are in the analysis model also in the imputation model (compatibility)
 * Add *auxiliary variables* 
 * Advice to use no more than 25 predictors (also depends on sample size)
@@ -94,18 +105,18 @@ Imputation model
 
 ## Iterations
 
-* One iteration, consists of one cycle through all variables that need to be imputed. 
+* One iteration = one cycle through all variables that need to be imputed. 
   + The algorithm starts with a random draw from the observed data.
   + Then imputes the incomplete data in a variable-by-variable fashion.
-* Typically 5 to 10 iterations before an imputed dataset is generated.
+* Typically 5 to 10 iterations before an imputed data set is generated.
 * Iterations are repeated to ensure convergence of the algorithm
 
 
-## Iterations for data set 1
+## Iterations for data set 1 
 
-**Plot of the iterations for generating the imputations for *Solar.R* a the first data set**
+**Iterations for generating the imputations for *Solar.R* in the first data set:**
 
-```{r}
+```{r echo=FALSE}
 set.seed(7876)
 imp1 <- mice(airquality, maxit = 10, print = F, m = 1)
 plot(imp1, y = "Solar.R", layout = c(1,1))[1]
@@ -114,9 +125,9 @@ plot(imp1, y = "Solar.R", layout = c(1,1))[1]
 
 ## Iterations for data set 2
 
-**Plot of the iterations for generating the imputations for *Solar.R* a the second data set**
+**Iterations for generating the imputations for *Solar.R* in the second data set:**
 
-```{r}
+```{r, echo = FALSE}
 set.seed(462)
 imp2 <- mice(airquality, maxit = 10, print = F, m = 1)
 plot(imp2, y = "Solar.R", layout = c(1,1))[1]
@@ -125,9 +136,9 @@ plot(imp2, y = "Solar.R", layout = c(1,1))[1]
 
 ## Iterations for 5 imputed datasets
 
-**Plot of the iterations for generating the imputations for *Solar.R* a the second data set**
+**Iterations for generating the imputations for *Solar.R* in all five data sets:**
 
-```{r}
+```{r echo = FALSE}
 set.seed(462)
 imp2 <- mice(airquality, maxit = 10, print = F, m = 5)
 plot(imp2, y = "Solar.R", layout = c(1,1))[1]
@@ -135,11 +146,10 @@ plot(imp2, y = "Solar.R", layout = c(1,1))[1]
 ```
 
 
-## Iteration plot
+## Convergence check | airquality illustration {.smaller}
 
-*airquality example*
 
-* check the convergence of the algorithm for all imputed variables
+* Check the convergence of the algorithm for all imputed variables
 
 ```{r}
 imp <- mice(airquality, maxit = 10, print = F)
@@ -147,9 +157,7 @@ plot(imp)
 
 ```
 
-## Iteration plot
-
-*airquality example*
+## Convergence check | airquality illustration {.smaller}
 
 * Use additional iterations when in doubt if convergence is reached
 
@@ -160,9 +168,7 @@ plot(imp)
 ```
 
 
-## Iteration plot
-
-*boys example*
+## Convergence check | boys illustration {.smaller}
 
 * Convergence may need more iterations
 
@@ -172,9 +178,7 @@ plot(imp, c("wgt", "gen", "tv"))
 
 ```
 
-## Iteration plot
-
-*boys example*
+## Convergence check | boys illustration {.smaller}
 
 * Looks better for gen and tv, but there seems to be a problem for wgt. 
 
@@ -205,7 +209,7 @@ plot(imp, c("wgt", "gen", "tv"))
 
 * Workflow:
   + Imputation
-  + Analysis
+  + **Analysis**
   + Pooling
 
 ## Analysis example {.smaller}
@@ -221,7 +225,47 @@ summary(fit)
 ## Pooling phase
 
 * Pool the analysis results to obtain final parameter estimates.
-* Usual normally distributed parameters: Rubin's Rules
+* For normally distributed parameters: **Rubin's Rules**
+
+## Rubin's Rules
+
+* Pooling of point estimates that are normally distributed over the imputed datasets. 
+* Means, standard deviations, regression estimates, linear predictors, proportions.
+* For pooling point estimates, use mean:
+
+  > $\hat\theta = \frac{1}{m} \sum^m_{i=1}{\theta_i}$
+
+* Pooling of variance or standard error around the estimate: combine the within and between imputation variance.
+
+## Variance pooling Rubins Rules
+
+
+Between variance:
+
+> $\sigma^2_{between} = \frac{\sum^m_{i=1}(\beta_i - \overline\beta)^2}{m-1}$
+
+<br>
+
+Within variance:
+
+> $\sigma^2_{within} = \frac{\sum^m_{i=1}\sigma^2_i}{m}$
+
+<br>
+
+**Total variance:** 
+
+> $\sigma^2_{total} = \sigma^2_{within} + \sigma^2_{between} + \frac{\sigma^2_{between}}{m}$
+
+
+## Pooling of non-normal parameters
+
+* Use a transformation to approximate a normal distribution
+* Examples:
+  + Correlation: Fisher $z$
+  + Odds Ratio, Relative Risk, Hazard ratio: log transformation
+  + Explained variance: Fisher $z$ for $\sqrt{R^2}$
+  
+  
 
 ## Pooling example {.smaller}
 
@@ -237,55 +281,16 @@ pool(fit_mi)
 * **riv**: Relative increase in variance due to nonresponse
 * **df**: Residual degrees of freedom for hypothesis testing
 * **lambda**: Proportion of total variance due to missingness
-* **fmi**: Fraction of missing information for the parameter estimates
+* **fmi**: Fraction of missing information; influence of missing data on the sample variance of the parameter estimates
 
-
-## Rubin's Rules
-
-* Pooling of point estimates that are normally distributed over the imputed datasets. 
-* Means, standard deviations, regression estimates, linear predictors, proportions.
-* For pooling point estimates, use mean:
-
-  > $\hat\theta = \sum^m_{i=1}{\theta_i}$
-
-* Pooling of variance or standard error around the estimate, combine the within and between imputation variance.
-
-## Variance pooling Rubins Rules
-
-
-* Between variance:
-
-  > $\sigma^2_{between} = \frac{\sum^m_{i=1}(\beta_i - \overline\beta)^2}{m-1}$
-
-* Within variance:
-  
-  > $\sigma^2_{within} = \frac{\sum^m_{i=1}\sigma^2_i}{m}$
-
-
-
-* **Total variance:** 
-
-  > $\sigma^2_{total} = \sigma^2_{within} + \sigma^2_{between} + \frac{\sigma^2_{between}}{m}$
-
-
-## Pooling of non-normal parameters
-
-* Use a transformation to approximate a normal distribution
-* Examples:
-  + Correlation: Fisher $z$
-  + Odds Ratio, Relative Risk, Hazard ratio: log transformation
-  + Explained variance: Fisher $z$ for $\sqrt{R^2}$
-  
-  
 
 # Imputation methods {data-background=Puzzle_zgnb3.jpg data-background-size=cover}
 
 
 ## Multiple imputation process
 
-* Imputation phase
-* Analysis phase
-* Pooling phase
+<center><img src="images/imp_process_with_text.png" height="330px" /></center>
+<br>
 
 In the imputation phase, imputed values are estimated using an *imputation method*.
 
@@ -297,7 +302,7 @@ In the imputation phase, imputed values are estimated using an *imputation metho
 * Predictive mean matching: `pmm`
 
 
-## Example data {.smaller}
+## Example data | airquality {.smaller}
 
 ```{r echo = FALSE}
 psych::describe(airquality) %>%
@@ -336,14 +341,14 @@ ggplot(impr_long, aes(X1, X2, color = factor(R), group = factor(R)))+
 
 ## Regression imputation | Univariate imputation {.smaller}
 
-```{r}
+```{r fig.height=4.2}
 imp_reg <- mice(airquality %>% select(Ozone, Solar.R), method = "norm.predict", print = F)
 xyplot(imp_reg, Ozone ~ Solar.R)
 ```
 
 ## Regression imputation | Multivariate imputation {.smaller}
 
-```{r}
+```{r fig.height=4.2}
 imp_reg <- mice(airquality,  method = "norm.predict", print = F)
 xyplot(imp_reg, Ozone ~ Solar.R)
 ```
@@ -379,14 +384,14 @@ ggplot(impsr_long, aes(X1, X2, color = factor(R), group = factor(R)))+
 
 ## Stochastic regression imputation | Univariate {.smaller}
 
-```{r}
+```{r fig.height=4.2}
 imp_reg <- mice(airquality %>% select(Ozone, Solar.R), method = "norm.nob", print = F)
 xyplot(imp_reg, Ozone ~ Solar.R)
 ```
 
 ## Stochastic regression imputation | Multivariate {.smaller}
 
-```{r}
+```{r fig.height=4.2}
 imp_reg <- mice(airquality, method = "norm.nob", print = F)
 xyplot(imp_reg, Ozone ~ Solar.R)
 ```
@@ -428,14 +433,14 @@ geom_point(size = 2)+
 
 ## Bayesian regression imputation | Univariate {.smaller}
 
-```{r}
+```{r fig.height=4.2}
 imp_breg <- mice(airquality %>% select(Ozone, Solar.R), method = "norm", print = F)
 xyplot(imp_breg, Ozone ~ Solar.R)
 ```
 
 ## Bayesian regression imputation | Multivariate {.smaller}
 
-```{r}
+```{r fig.height=4.2}
 imp_breg <- mice(airquality, method = "norm", print = F)
 xyplot(imp_breg, Ozone ~ Solar.R)
 ```
@@ -497,14 +502,14 @@ geom_point(size = 2)+
 
 ## Predictive mean matching | Univariate {.smaller}
 
-```{r}
+```{r fig.height=4.2}
 imp_pmm <- mice(airquality %>% select(Ozone, Solar.R), method = "pmm", print = F)
 xyplot(imp_pmm, Ozone ~ Solar.R)
 ```
 
 ## Predictive mean matching | Multivariate {.smaller}
 
-```{r}
+```{r fig.height=4.2}
 imp_pmm <- mice(airquality, method = "pmm", print = F)
 xyplot(imp_pmm, Ozone ~ Solar.R)
 ```
@@ -584,6 +589,8 @@ geom_point(size = 2, alpha = 0.8)+
 
 ## Classification and regression trees | Algorithm
 
+*For continuous or categorical variables*
+
 * Draw a random bootstrap sample as training set.
 * Fit the tree model using the observed data.
 * Find the predicted terminal node for the missing value
@@ -611,14 +618,14 @@ geom_point(size = 2)+
 
 ## Classification and regression trees | Univariate {.smaller}
 
-```{r}
+```{r fig.height=4.2}
 imp_rf <- mice(airquality %>% select(Ozone, Solar.R), method = "cart", print = F)
 xyplot(imp_rf, Ozone ~ Solar.R)
 ```
 
 ## Classification and regression trees | Multivariate {.smaller}
 
-```{r}
+```{r fig.height=4.2}
 imp_rf <- mice(airquality, method = "cart", print = F)
 xyplot(imp_rf, Ozone ~ Solar.R)
 ```
