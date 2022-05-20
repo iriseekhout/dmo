@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Missing value analyses
 
-> *Use the built-in dataset `boys` that is part of the `mice` package for the assignments about missing value analyses.* 
+> *Use the builtin dataset `boys` that is part of the `mice` package for the assignments about missing value analyses.* 
 
 ### Assignment 1: amount of missing values
 
@@ -66,10 +66,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Assignment 4: Evaluating the missing data mechanism
 
-> *Use the `boys` dataset again for the assignments about evaluating the missing data mechanism.*
+> *Use the builtin `airquality` data set for the assignments about evaluating the missing data mechanism.*
 
-> a. Evaluate the missing data mechanism for the boys data with univariate tests. What are your conclusions?
-> b. Evaluate the missing data mechanism for the builtin `airquality` data with a multivariate test. What are your conclusions?
+> a. Evaluate the missing data mechanism for the `airquality` data with univariate tests. What are your conclusions?
+> b. Evaluate the missing data mechanism for the `airquality` data with a multivariate test. What are your conclusions?
 
 ## Multiple imputation
 
@@ -92,6 +92,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Assignment 6: multiple imputation model
 
+Imputation model assignments for boys data. First small model then larger model, then advanced use passive imputation for BMI?
 
 ### Assignment 7: multiple imputation iteration plots
 
