@@ -90,11 +90,25 @@ knitr::opts_chunk$set(echo = TRUE)
 > c. What are the most relevant predictors for bmi?
 
 
-### Assignment 6: multiple imputation model
+### Assignment 6: multiple imputation model amd convergence
 
-Imputation model assignments for boys data. First small model then larger model, then advanced use passive imputation for BMI?
+> *Create the predictor matrix for the builtin `boys` data using the `make.predictorMatrix()` function in `mice`.*
 
-### Assignment 7: multiple imputation iteration plots
+> a. Adjust the predictor matrix so that the variables that have more than 50% missing values are excluded as predictors for the imputation. 
+
+> *Perform multiple imputation on the `boys` data with the predictor matrix designed at assignment 6a with 10 imputations and 10 iterations.*
+
+> b. What methods are used for the imputation of each variable and explain why these are used.
+
+> c. Inspect the iteration plots. What are your observations?
+
+> d. Adjust the predictor matrix such that hgt and wgt are not imputed by bmi, or vice versa, and that hgt and wgt are not used as predictors together with bmi. Why do you think that these changes are needed?
+
+> e. Use the adjusted predictor matrix to impute the boys dataset again, with 10 imputations and 10 iterations. Inspect the iteration plots again, do you see improvements for hgt, wgt and bmi?**
+
+> f. Another way to deal with the relation between hgt and wgt with bmi is to use "passive imputation" to impute the bmi variable. Adjust the method and predictor matrix in such a way that the bmi variable is passively imputed by hgt and wgt. Inspect the iteration plots again, do you see improvements for hgt, wgt and bmi?** 
+
+
 
 
 

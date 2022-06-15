@@ -257,8 +257,110 @@ summary(combi)
 ``` 
 
 
-## Solution 6: multiple imputation model
+## Solution 6: multiple imputation model and convergence
 
+**a. Adjust the predictor matrix so that the variables that have more than 50% missing values are excluded as predictors for the imputation.** 
+
+First create the predictor matrix for the `boys` dataset with the `make.predictorMatrix()` function in `mice`. 
+
+```{r}
+pred <- make.predictorMatrix(boys)
+```
+
+Inspect the boys dataset, and find out what variables have more than 50% missing values. These are "gen", "phb", and "tv". 
+
+```{r}
+colMeans(is.na(boys))
+
+```
+
+Now, exclude variables "gen", "phb", and "tv" as predictors from this matrix. Note that predictors are in the columns.
+
+```{r}
+pred[,c("gen", "phb", "tv")] <- 0
+pred
+```
+
+Perform multiple imputation on the `boys` data with the predictor matrix designed at assignment 6a with 10 imputations and 10 iterations.
+
+```{r}
+imp <- mice(boys, m = 10, maxit = 10, predictorMatrix = pred)
+```
+
+**b. What methods are used for the imputation of each variable and explain why these are used.**
+
+* For "hgt", "wgt", "bmi", "hc" and "tv" the "pmm" (predictive mean matching) method is used. This is the default for continuous variables and the variables indicated are all continuous. 
+* For "gen" and "phb" the "polr" method is used, which is the default for ordinal variables. The imputation function is a proportional odds model.
+* For "reg" the "polyreg" method is used. This method is de default for unordered nominal variables and is the polytomous logistic regression. 
+
+
+```{r}
+imp$method
+``` 
+
+**c. Inspect the iteration plots. What are your observations?**
+
+```{r}
+plot(imp)
+``` 
+
+
+The iteration plots for the variables "hc", "gen", "phb", "tv", and "reg" all show crossing interacting lines that are more or less centered around. For the variables "hgt", "wgt" and "bmi" the lines to not cross as much and some lines are below the mean for all iterations, whereas other lines are above the mean for all iterations. So the iteration plots for "hgt", "wgt" and "bmi" do not show a very good convergence. 
+
+
+
+**d. Adjust the predictor matrix such that hgt and wgt are not imputed by bmi, or vice versa, and that hgt and wgt are not used as predictors together with bmi. Why do you think that these changes are needed?**
+
+Option 1:
+
+First, we remove "hgt" and "wgt" as predictors for the imputaiton of "bmi". Second, we remove "bmi" as a predictor for all variables, to ensure that "bmi" is not used as predictor in a model together with "wgt" and "hgt". 
+
+```{r}
+pred1 <- pred
+pred1["bmi", c("hgt", "wgt")] <- 0
+pred1[,"bmi"] <- 0
+
+```
+
+Option 2:
+
+We remove "hgt" and "wgt" as predictors for all variables, that way they won't be together in the model with "bmi" and they will not be used as predictors for imputing "bmi".
+
+```{r}
+pred2 <- pred
+pred2[, c("hgt", "wgt")] <- 0
+pred2[c("hgt", "wgt"), "bmi"] <- 0
+
+```
+
+Maybe there are other options?
+
+These changes are needed, because bmi is calculated directly from height and weight. So using these variables together results in multi-collinearity problems with the model. 
+
+**e. Use the adjusted predictor matrix to impute the boys dataset again, with 10 imputations and 10 iterations. Inspect the iteration plots again, do you see improvements for hgt, wgt and bmi?**
+
+
+```{r}
+imp1 <- mice(boys, m = 10, maxit = 10, pred = pred1)
+plot(imp1)
+imp2 <- mice(boys, m = 10, maxit = 10, pred = pred2)
+plot(imp2)
+```
+
+
+**f. Another way to deal with the relation between hgt and wgt with bmi is to use "passive imputation" to impute the bmi variable. Adjust the method and predictor matrix in such a way that the bmi variable is passively imputed by hgt and wgt. Inspect the iteration plots again, do you see improvements for hgt, wgt and bmi?** 
+
+The formula for bmi is $bmi =  \frac{weight}{height_{meters}^2}$. This formula is added as imputation method to compute missing bmi values, from the imputed weight and height values. We use the second option of the predictor matrix (option 1 is also possible), so that the updated bmi variable (from imputed hgt and wgt) is used as predictor for other variables. Option 1 might be preferred when bmi is used in the substantial analyses. 
+
+```{r}
+
+method <- imp$method
+method["bmi"] <- "~I(wgt / (hgt/100)^2)"
+
+imp <- mice(boys, m = 10, maxit = 10, pred = pred2, method = method)
+
+plot(imp)
+```
 
 
 ## Solution 7: multiple imputation iteration plots
