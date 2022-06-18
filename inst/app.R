@@ -1,5 +1,8 @@
 
 library(shiny)
+library(ggplot2)
+
+theme_set(theme_light())
 
 # Define UI for application that draws a histogram
 ui <- shinyUI(fluidPage(
