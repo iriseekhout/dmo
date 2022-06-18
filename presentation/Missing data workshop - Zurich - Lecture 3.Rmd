@@ -72,9 +72,11 @@ library(dmo)
   + Similar information is used as in multiple imputation (if model holds same information), so results are comparable.
 
 
-## FIML in `lavaan` {.smaller}
+## FIML in `lavaan` descriptives {.smaller}
 
 * In R use `lavaan` package with `missing = "fiml"`.
+* Specify all variables with ~~ for the variance estimation
+* Use `meanstructure = TRUE` to obtain means of variables.
 
 ```{r echo=TRUE}
 model <- '
@@ -83,11 +85,6 @@ model <- '
   Solar.R ~~ Solar.R
   Wind ~~ Wind
   Temp ~~ Temp
-  
-  #correlation
-  Ozone ~~ Solar.R + Wind + Temp
-  Solar.R ~~ Wind + Temp
-  Wind ~~ Temp
   '
 fit <- sem(model, data = airquality, missing = "fiml", meanstructure = TRUE)
 ```
@@ -96,7 +93,32 @@ fit <- sem(model, data = airquality, missing = "fiml", meanstructure = TRUE)
 
 
 ```{r echo=FALSE}
-summary(fit, standardized = TRUE, header = FALSE)
+summary(fit, header = FALSE)
+```
+
+
+
+## FIML in `lavaan` correlation {.smaller}
+
+* In R use `lavaan` package with `missing = "fiml"`.
+* Specify all variables with ~~ and other variables for the co-variance estimation
+
+```{r echo=TRUE}
+model <- '
+  #correlation
+  Ozone ~~ Solar.R + Wind + Temp
+  Solar.R ~~ Wind + Temp
+  Wind ~~ Temp
+  '
+fit <- sem(model, data = airquality, missing = "fiml")
+```
+
+## FIML descriptives {.smaller}
+
+* Use `standardized = TRUE` in the summary function to obtain correlation.
+
+```{r echo=FALSE}
+summary(fit, header = FALSE, standardized = TRUE)
 ```
 
 
@@ -170,7 +192,7 @@ summary(combi)
 * Use auxiliary variables to improve missing data handling
 * Auxiliary variables to covariances in the model
 
-```{r}
+```{r echo = TRUE}
 model_aux <- '
   Ozone ~ Solar.R 
   Solar.R ~~ Wind + Temp + Month + Day
@@ -194,7 +216,7 @@ summary(auxfit1, header = FALSE, fmi = TRUE)
 
 * Easily add auxiliary variables with `semTools` package
 
-```{r}
+```{r echo = TRUE}
 aux.vars <- c("Wind", "Temp", "Month","Day")
 auxfit <- sem.auxiliary(model=model, missing = "fiml", aux=aux.vars, fixed.x=FALSE, data=airquality)
 

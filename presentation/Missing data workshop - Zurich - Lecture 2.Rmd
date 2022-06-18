@@ -965,7 +965,7 @@ Most important arguments in `mice()`
 
 ## Summary of data
 
-```{r}
+```{r echo=TRUE}
 summary(nhanes2)
 
 ``` 
@@ -974,13 +974,13 @@ summary(nhanes2)
 ## Multiple imputation {.smaller}
 
 
-```{r}
+```{r echo=TRUE}
 imp <-mice(nhanes2, m=5, maxit=10, seed = 800)
 ```
 
 ## predictor matrix {.smaller}
 
-```{r}
+```{r echo=TRUE}
 imp$pred
 ```
 
@@ -988,7 +988,7 @@ imp$pred
 
 Remove a predictor variable, e.g remove "bmi" as predictor for "chl".
 
-```{r}
+```{r echo=TRUE}
 
 imp$pred["chl","bmi"] <- 0
 imp$pred
@@ -998,12 +998,12 @@ pred_update <- imp$pred
 
 ## methode per variable {.smaller}
 
-```{r}
+```{r echo=TRUE}
 imp$meth
 ```
 
 Change the imputation method for one variable
-```{r}
+```{r echo=TRUE}
 imp$meth["bmi"] <- "norm"
 imp$meth
 
@@ -1013,7 +1013,7 @@ meth_update <- imp$meth
 
 ## Run with new settings {.smaller}
 
-```{r}
+```{r echo=TRUE}
 imp_update <- mice(nhanes2, m=5, maxit=10, pred=pred_update, meth=meth_update, seed = 90)
 
 ```
@@ -1021,40 +1021,40 @@ imp_update <- mice(nhanes2, m=5, maxit=10, pred=pred_update, meth=meth_update, s
 
 ## Iteration plots
 
-```{r}
+```{r echo=TRUE}
 plot(imp)
 ```
 
 ## View imputed values
 
-```{r}
+```{r echo=TRUE}
 stripplot(imp)
 ```
 
 ## View imputed values linear
 
-```{r}
+```{r echo=TRUE}
 xyplot(imp, chl ~ bmi)
 
 ```
 
 ## Analyze imputed data
 
-```{R}
+```{R echo=TRUE}
 fit <- with(imp, lm(chl ~ age))
 
 ```
 
 ## View separate analysis results {.smaller}
 
-```{R}
+```{R echo=TRUE}
 summary(fit)
 ```
 
 
 ## Pool results
 
-```{r}
+```{r echo=TRUE}
 
 pool(fit)
 
