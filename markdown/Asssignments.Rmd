@@ -104,12 +104,36 @@ knitr::opts_chunk$set(echo = TRUE)
 
 > d. Adjust the predictor matrix such that hgt and wgt are not imputed by bmi, or vice versa, and that hgt and wgt are not used as predictors together with bmi. Why do you think that these changes are needed?
 
-> e. Use the adjusted predictor matrix to impute the boys dataset again, with 10 imputations and 10 iterations. Inspect the iteration plots again, do you see improvements for hgt, wgt and bmi?**
+> e. Use the adjusted predictor matrix to impute the boys dataset again, with 10 imputations and 10 iterations. Inspect the iteration plots again, do you see improvements for hgt, wgt and bmi?
 
-> f. Another way to deal with the relation between hgt and wgt with bmi is to use "passive imputation" to impute the bmi variable. Adjust the method and predictor matrix in such a way that the bmi variable is passively imputed by hgt and wgt. Inspect the iteration plots again, do you see improvements for hgt, wgt and bmi?** 
+> f. Another way to deal with the relation between hgt and wgt with bmi is to use "passive imputation" to impute the bmi variable. Adjust the method and predictor matrix in such a way that the bmi variable is passively imputed by hgt and wgt. Inspect the iteration plots again, do you see improvements for hgt, wgt and bmi?
+
+## Missing data in practice
+
+### Assignment 7: FIML
+
+> *Use the builtin `airquality` data for this assignment*
+
+> a. Repeat the example from the lecture on FIML and estimate the descriptive means for the `airquality` variables Ozone, Solar.R, Wind and Temp using FIML esimation. 
+
+> b. Now estimate a regression between `Ozone` and `Temp` using FIML estimation (Ozone as dependent variable), what is the coefficient for Temp?
+
+> c. What is the Fraction of missing information in this regression analysis?
+
+> d. Add the other variables in the data as auxiliary variables to estimate the regression between Ozone and Temp. Did the coefficient for Temp change?
 
 
+### Assignment 8: Longitudinal missing data
 
+> *Use the builtin `fdd` data for this assignment and select only the following variables: "id", "trt", "age", "sex", "trauma", "yc1", "yc2", "yc3". See `?fdd` for more information about the dataset.
+
+> a. Which variables have missing data and how many?
+
+> b. Analyze the data with a longitidunal model (yc1, yc2 and yc3 are the dependent repeated measurements), using trt, age, sex and trauma as predictor.
+
+> c. Apply multiple imputation to the wide data an repeat the longitudinal analysis, compare the result with the previous answer. 
+
+> d. Perform a multilevel multiple imputation to deal with the missing values and repeat the longitudinal analysis again, compare the results with the previous answers. 
 
 
 
