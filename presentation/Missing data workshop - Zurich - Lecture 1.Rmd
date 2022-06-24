@@ -119,11 +119,13 @@ For missing data handling:
 
 * `mice`: multiple imputation by chained equations
 * `miceadds`: additional Multiple Imputation Functions, Especially for 'mice'
+* `lavaan`: for fiml analyses in structural equation models
 
 Other R packages
 
 * `dplyr`: for data manipulation, summarizing and grouping
-* `tidyr`: tools for shaping and structuring data.
+* `tidyr`: tools for shaping and structuring data
+* `lme4`: for analyzing longitudinal data in a multilevel model
 
 
 

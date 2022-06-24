@@ -117,13 +117,13 @@ More missing values at higher BMI values.
 
 **g. Comparing the histograms, what knee pain values are mostly missing?**
 
-In the MNAR situation, more missings are present in the higher values of knee pain. 
+In the MNAR situation, mostly the higher values of knee pain are missing. 
 
-**h. What happens with thee association between BMI and knee pain?**
+**h. What happens with the association between BMI and knee pain?**
 
 * MCAR: coefficient= 0.46; se=0.10
 * MAR: coefficient=0.37; se=0.11
-* MNAR: coefficient=0.27; se=0.11 
+* MNAR: coefficient=0.38; se=0.08 
 * 0% missing: coefficient=0.54; se=0.07.
 
 The association becomes less strong when you change from MCAR to MAR to MNAR, so coefficients get more biased. Also for MCAR the missings are nicely distributed over the BMI values. In the MAR mechanism there are more missings at higher values of BMI but also lower Knee Pain scores are missing. In the MNAR mechanism, mostly higher values of Knee Pain scores are missing.
@@ -132,7 +132,7 @@ The association becomes less strong when you change from MCAR to MAR to MNAR, so
 
 * MCAR: mean=14.79; sd=2.98 
 * MAR: mean=14.01; sd=2.85
-* MNAR: mean= 13.34; sd=2.69
+* MNAR: mean= 12.66; sd=2.21
 * 0%missing: mean=14.77; sd=3.11
 
 Both mean and standard deviation decrease when changing from MCAR to MAR to MNAR.
@@ -370,12 +370,18 @@ plot(imp)
 
 **a. Repeat the example from the lecture on FIML and estimate the descriptive means for the `airquality` variables Ozone, Solar.R, Wind and Temp using FIML estimation.** 
 
+
+```{r message=FALSE, warning=FALSE}
+library("lavaan")
+```
+
 First specify the variables in the airquality data with the intercept code. It is possible to copy the code used in the Lecture, both give the same result.
 
 The means are as follows: Ozone = 42.129; Solar.R = 185.932; Wind = 9.958; Temp = 77.882
 
 
 ```{r echo=TRUE}
+
 model <- '
   #variance
   Ozone ~1 
@@ -406,7 +412,7 @@ summary(fit)
 
 The coefficient for Temp = 2.429 (SE = 0.231).
 
-```{r eval=FALSE, echo = TRUE}
+```{r eval=TRUE, echo = TRUE}
 model <- '
   Ozone ~ Temp 
   '
@@ -423,7 +429,7 @@ The fraction of missing information reported for this analysis is shown in the l
 
 The coefficient for Temp changed to 2.354 (SE = 0.225). 
 
-```{r echo=, message=FALSE, warning=FALSE}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 model_aux <- '
   Ozone ~ Temp 
   Temp ~~ Wind + Solar.R + Month + Day
@@ -442,7 +448,7 @@ summary(auxfit)
 
 **a. Which variables have missing data and how many?**
 
-First select the variables from the `fdd` data for this assignment.
+First select the variables: "id", "trt", "age", "sex", "cbcl1", "yc1", "yc2" and "yc3" from the `fdd` data for this assignment.
 
 ```{r} 
 
@@ -455,19 +461,24 @@ The fdd1 data only contains the selected variables for this assignment. The summ
 
 **b.  Analyze the data with a longitudinal model (yc1, yc2 and yc3 are the dependent repeated measurements), using time, age, sex and cbcl1 as predictor. What can you conclude about the ptsd scores? How many study participants are used in the analysis?**
 
-To analyze the data with a longitudinal multilevel model (preferred, however repeated measurements model can be used too), then we need to restructure the data into a long format. The repeated measurement are the follow-up time, and the outcome variable is a post-traumatic stress (PTSD) score. 
+To analyze the data with a longitudinal multilevel model (preferred, however repeated measurements model can be used too), we need to restructure the data into a long format. The repeated measurement indicator is the follow-up "time", and the outcome variable is a post-traumatic stress ("ptsd") score. 
 
 ```{r}
+library(tidyr)
+
 fdd1_long <- pivot_longer(fdd1, cols = c("yc1", "yc2", "yc3"), names_to = "time", values_to = "ptsd", names_prefix = "yc")
 
 #note by using names_prefix, the prefix "yc" is removed from the time variable, so that it can be easily transformed to numeric if needed.
 
 ```
 
-Apply the longitudinal model.
+Apply the longitudinal model: use a linear multilevel regression with a random intercept for "id".
 
 ```{r}
-model <- lme4::lmer(ptsd ~ time + age + sex + cbcl1+ (1|id), data = fdd1_long)
+library(lme4)
+library(lmerTest)
+
+model <- lmer(ptsd ~ time + age + sex + cbcl1+ (1|id), data = fdd1_long)
 summary(model)
 
 ```
@@ -475,9 +486,9 @@ summary(model)
 In total 33 persons are included in the analyses (out of the in total 52 participants in the data). Over time, the ptsd scores decrease.
 
 
-**c. Perform a multilevel multiple imputation with only a random intercept, use 50 imputations and 10 iterations. Repeat the longitudinal analysis, compare the parameter estimates, with the estimates from the previous answer.**
+**c. Perform a multilevel multiple imputation with only a random intercept. Use 50 imputations and 10 iterations for the imputations. Repeat the longitudinal analysis and compare the parameter estimates with the estimates from the previous answer. Describe your findings.**
 
-The multilevel imputation should be performed on the long data, so we use the restructured dataset to make a predictormatrix.
+The multilevel imputation should be performed on the long data format, so we use the restructured dataset to make a predictor matrix. In the predictor matrix we change the 1's in the "id" column to -2 to indicate that this is the level variable.
 
 ```{r}
 
@@ -490,9 +501,10 @@ pred
 
 ```
 
-Initialize the imputation model to change the method to "2l.pmm" to use a multilevel imputation model for the variables with missing data (trauma and ptsd). 
+Initialize the imputation model to change the method to "2l.pmm" to use a multilevel imputation method for the variables with missing data (trauma and ptsd). 
 
 ```{R}
+library(miceadds)
 
 ini <- mice(fdd1_long, m = 1, maxit = 0, pred = pred)
 long_meth <- ini$method
@@ -501,23 +513,24 @@ long_meth
 
 ```
 
-Run the imputation, with 50 imputations and 10 iterations using the predictormatrix with -2 for "id",  and the "2l.pmm" methods for the variables that have missing values. 
+Run the imputation, with 20 imputations and 10 iterations using the predictor matrix with -2 for "id",  and the "2l.pmm" methods for the variables that have missing values. 
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 
-imp_long <- mice(fdd1_long, pred = pred, meth = long_meth, m = 50, maxit = 10)
+imp_long <- mice(fdd1_long, pred = pred, meth = long_meth, m = 20, maxit = 10)
 
 ```
 
-Fit the model to each imputated dataset and pool the results. 
+Fit the model to each imputed dataset and pool the results. 
 
 ```{r}
+library(broom.mixed)
 
-fit <- with(imp_long, lme4::lmer(ptsd ~  time + age + sex + (1|id) ))
+fit <- with(imp_long, lmer(ptsd ~  time + age + sex + (1|id) ))
             
 summary(pool(fit))
 ```
 
 
-The results show a similar conclusion; the ptsd scores decrease over time for all participants, however the coefficients seem less strong after imputation. One possible reason might be that the itention to treat analysis (analysis with imputations) reveals that mostly participants with less progress (less decrease in PTSD score) drop-out. Further investigations into the missing data and other information in the data may give us more insight into this. 
+The results show a similar conclusion as for the previous answer; the ptsd scores decrease over time for all participants. However the coefficients seem less strong after imputation. One possible reason might be that the itention to treat analysis (analysis with imputations) reveals that mostly participants with less progress (less decrease in PTSD score) drop-out. Further investigations into the missing data and other information in the data may give us more insight into this. Note that now all 52 participants are included in the analyses (by calling `fit`).
 

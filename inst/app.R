@@ -83,9 +83,15 @@ server <- shinyServer(function(input, output) {
     }
   if(input$g=="MNAR"){
     set.seed(23183)
-    misout <- dmo::MNAR(x=dat1(), alpha=(input$alpha/100), pattern=t(c(1,0,1)))
-  }
-    
+    #misout <- dmo::MNAR(x=dat1(), alpha=(input$alpha/100), pattern=t(c(1,0,1)))
+    ord <- rank(dat1()[,2])*0.6/(nrow(dat1()))
+    prop <- runif(nrow(dat1()))*0.4
+    mnarp <- ord + prop
+    cutof <- quantile(mnarp, 1-input$alpha/100)
+    ind <- ifelse(mnarp > cutof, TRUE, FALSE)
+    misout <- dat1()
+    misout[,2] <- ifelse(ind, NA, misout[,2])
+    }
     
   dat2 <- data.frame(misout)
   colnames(dat2) <- c("X","Y", "V2")

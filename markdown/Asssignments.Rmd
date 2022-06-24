@@ -13,9 +13,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Missing value analyses
 
-> *Use the builtin dataset `boys` that is part of the `mice` package for the assignments about missing value analyses.* 
 
 ### Assignment 1: amount of missing values
+
+> *Use the builtin dataset `boys` that is part of the `mice` package for this assignment about missing value analyses.* 
 
 > a. How many variables have missing data?
 > b. How many rows in the data contain missing values?
@@ -23,6 +24,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ### Assignment 2: missing data patterns
+
+> *Use the builtin dataset `boys` that is part of the `mice` package for this assignment about missing value analyses.* 
 
 > a. How many different missing data patterns occur in the data?
 > b. What is the most frequently occurring pattern in the data?
@@ -55,7 +58,7 @@ knitr::opts_chunk$set(echo = TRUE)
 > e. What is the association between BMI and knee pain? How does this compare to the association when the data were MCAR?
 > f. When there are 30% MAR missing data at sample size 250, at what BMI values do missing data on knee pain occur (inspect the scatterplot and the boxplots).
 
-> *Set the missing data mechanism at “MNAR”, the percentage of missing data at 30%% and the sample size at 1000.*
+> *Set the missing data mechanism at “MNAR”, the percentage of missing data at 30% and the sample size at 1000.*
 
 > g. Comparing the histograms, what knee pain values are mostly missing?
 
@@ -125,15 +128,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Assignment 8: Longitudinal missing data
 
-> *Use the builtin `fdd` data for this assignment and select only the following variables: "id", "trt", "age", "sex", "trauma", "yc1", "yc2", "yc3". See `?fdd` for more information about the dataset.
+> *Use the builtin `fdd` data for this assignment and select only the following variables: "id", "trt", "age", "sex", "cbcl1", "yc1", "yc2", "yc3". See `?fdd` for more information about the dataset.*
 
 > a. Which variables have missing data and how many?
 
-> b. Analyze the data with a longitidunal model (yc1, yc2 and yc3 are the dependent repeated measurements), using trt, age, sex and trauma as predictor.
-
-> c. Apply multiple imputation to the wide data an repeat the longitudinal analysis, compare the result with the previous answer. 
-
-> d. Perform a multilevel multiple imputation to deal with the missing values and repeat the longitudinal analysis again, compare the results with the previous answers. 
+> b. Analyze the data with a longitudinal model (yc1, yc2 and yc3 are the dependent repeated measurements for ptsd), using time, age, sex and cbcl1 as predictors. What can you conclude about the ptsd scores? How many study participants are used in the analysis?
+ 
+> c. Perform a multilevel multiple imputation with only a random intercept. Use 20 imputations and 10 iterations for the imputations. Repeat the longitudinal analysis and compare the parameter estimates with the estimates from the previous answer. Describe your findings. 
 
 
 
