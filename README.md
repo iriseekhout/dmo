@@ -12,7 +12,7 @@ were investigated.
 
 ``` r
 install.packages("devtools")
-devtools::install_github(repo = "iriseekout/dmo")
+devtools::install_github(repo = "iriseekhout/dmo")
 ```
 
 \#\#Overview
